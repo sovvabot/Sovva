@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Sovva — Auth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --input-bg: #ffffff;
+      --btn-bg: #111827;
+      --btn-text: #ffffff;
+      --btn-secondary-bg: transparent;
+      --danger: #cf222e;
+      --warn: #d97706;
+      --ok: #1a7f37;
+      --overlay: rgba(0, 0, 0, 0.55);
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0d1117;
+      --card: #161b22;
+      --text: #f0f6fc;
+      --muted: #8b949e;
+      --border: #30363d;
+      --input-bg: #0d1117;
+      --btn-bg: #f0f6fc;
+      --btn-text: #0d1117;
+      --btn-secondary-bg: transparent;
+      --danger: #f85149;
+      --warn: #e3b341;
+      --ok: #3fb950;
+      --overlay: rgba(0, 0, 0, 0.72);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="auto"] {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --input-bg: #0d1117;
+        --btn-bg: #f0f6fc;
+        --btn-text: #0d1117;
+        --btn-secondary-bg: transparent;
+        --danger: #f85149;
+        --warn: #e3b341;
+        --ok: #3fb950;
+        --overlay: rgba(0, 0, 0, 0.72);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .controls-mini {
+      display: flex;
+      gap: 8px;
+    }
+
+    select, input, button {
+      font-family: inherit;
+    }
+
+    .mini-select {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .input:focus {
+      outline: 2px solid var(--text);
+      outline-offset: 1px;
+    }
+
+    .gender-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .gender-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      background: var(--input-bg);
+    }
+
+    .gender-option input {
+      margin: 0;
+    }
+
+    .dob-selects {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1fr;
+      gap: 8px;
+    }
+
+    .strength-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 2px;
+    }
+
+    .strength-bar-bg {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .strength-bar-fill {
+      height: 100%;
+      width: 15%;
+      background: var(--danger);
+      transition: width 0.2s ease, background-color 0.2s ease;
+    }
+
+    .strength-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--danger);
+    }
+
+    .rules-list {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .rule-ok {
+      color: var(--ok);
+      font-weight: 500;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-bg);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--btn-secondary-bg);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 13px;
+      min-height: 18px;
+      white-space: pre-line;
+    }
+
+    .saving-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 50;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .saving-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--danger);
+    }
+
+    .modal p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .modal-disclaimer {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">Sovva</div>
+      <div class="controls-mini">
+        <select id="langSelect" class="mini-select" aria-label="Language">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+        </select>
+        <select id="themeSelect" class="mini-select" aria-label="Theme">
+          <option value="auto" data-i18n="themeAuto">Авто</option>
+          <option value="light" data-i18n="themeLight">Светлая</option>
+          <option value="dark" data-i18n="themeDark">Тёмная</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <h1 id="titleText">Завершение регистрации</h1>
+      <p id="subtitleText" class="subtitle">Заполните данные профиля Sovva</p>
+    </div>
+
+    <form id="authForm" novalidate style="display:flex; flex-direction:column; gap:14px;">
+      <div class="field">
+        <label for="firstNameInput" id="firstNameLabel">Имя</label>
+        <input id="firstNameInput" class="input" type="text" autocomplete="given-name" />
+        <span id="firstNameHint" class="hint">Если вы вошли через Google, имя может подставиться автоматически.</span>
+      </div>
+
+      <div class="field">
+        <label for="lastNameInput" id="lastNameLabel">Фамилия</label>
+        <input id="lastNameInput" class="input" type="text" autocomplete="family-name" />
+        <span id="lastNameHint" class="hint">По желанию.</span>
+      </div>
+
+      <div class="field">
+        <label id="genderLabel">Пол</label>
+        <div class="gender-group">
+          <label class="gender-option">
+            <input type="radio" name="gender" value="male" />
+            <span id="genderMale">Мужской</span>
+          </label>
+          <label class="gender-option">
+            <input type="radio" name="gender" value="female" />
+            <span id="genderFemale">Женский</span>
+          </label>
+          <label class="gender-option">
+            <input type="radio" name="gender" value="unspecified" checked />
+            <span id="genderUnspecified">Не указан</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="dobManualInput" id="dobLabel">Дата рождения</label>
+        <div class="dob-selects">
+          <select id="dobDay" class="input" aria-label="Day"></select>
+          <select id="dobMonth" class="input" aria-label="Month"></select>
+          <select id="dobYear" class="input" aria-label="Year"></select>
+        </div>
+        <input id="dobManualInput" class="input" type="text" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" maxlength="10" />
+        <span id="dobHint" class="hint">Можно выбрать день, месяц и год списком или ввести вручную в формате ДД.ММ.ГГГГ.</span>
+      </div>
+
+      <div class="field">
+        <label for="passwordInput" id="passwordLabel">Пароль</label>
+        <div class="strength-box">
+          <div class="strength-bar-bg">
+            <div id="strengthFill" class="strength-bar-fill"></div>
+          </div>
+          <div id="strengthText" class="strength-label">Слабый</div>
+        </div>
+        <input id="passwordInput" class="input" type="password" autocomplete="new-password" />
+        <ul class="rules-list">
+          <li id="ruleLatin">Только латинские буквы</li>
+          <li id="ruleUpper">Минимум одна заглавная буква (A–Z)</li>
+          <li id="ruleDigitOrUnderscore">Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)</li>
+          <li id="ruleSymbol">Хотя бы один специальный символ (например, ! @ # $ % *)</li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label for="passwordConfirmInput" id="passwordConfirmLabel">Повторите пароль</label>
+        <input id="passwordConfirmInput" class="input" type="password" autocomplete="new-password" />
+      </div>
+
+      <div id="formError" class="error-msg"></div>
+
+      <div class="actions">
+        <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
+        <button id="skipPasswordBtn" class="btn-secondary" type="button">Пропустить пароль</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Модальное окно предупреждения о пропуске пароля -->
+  <div id="skipModal" class="saving-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">Внимание! Вы точно хотите пропустить пароль?</h2>
+      <p id="modalBody1">Если вы пропустите регистрацию пароля, ваш аккаунт может быть под угрозой от мошенников или злоумышленников.</p>
+      <p id="modalBody2">Также в любой момент вы можете поставить пароль.</p>
+      <div id="modalDisclaimer" class="modal-disclaimer">Разработчик не несёт ответственности за ваш аккаунт!</div>
+      <div class="modal-actions">
+        <button id="setPasswordNowBtn" class="btn-primary" type="button">Установить пароль</button>
+        <button id="confirmSkipBtn" class="btn-secondary" type="button">Всё равно пропустить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Оверлей сохранения в облако -->
+  <div id="savingOverlay" class="saving-overlay" aria-live="polite">
+    <div class="modal" style="text-align:center;">
+      <div class="spinner"></div>
+      <p id="savingText" style="font-weight:600; margin-top:6px;">Это может занять некоторое время</p>
+      <p id="savingSubtext" class="hint">Сохраняем данные в облако...</p>
+    </div>
+  </div>
+
+  <script>
+    const i18n = {
+      ru: {
+        title: "Завершение регистрации",
+        subtitle: "Заполните данные профиля Sovva",
+        firstName: "Имя",
+        firstNameHint: "Если вы вошли через Google, имя может подставиться автоматически.",
+        lastName: "Фамилия",
+        lastNameHint: "По желанию.",
+        gender: "Пол",
+        genderMale: "Мужской",
+        genderFemale: "Женский",
+        genderUnspecified: "Не указан",
+        dob: "Дата рождения",
+        dobPlaceholder: "ДД.ММ.ГГГГ",
+        dobHint: "Можно выбрать день, месяц и год списком или ввести вручную в формате ДД.ММ.ГГГГ.",
+        password: "Пароль",
+        passwordConfirm: "Повторите пароль",
+        strengthWeak: "Слабый",
+        strengthMedium: "Средний",
+        strengthStrong: "Сильный",
+        ruleLatin: "Только латинские буквы",
+        ruleUpper: "Минимум одна заглавная буква (A–Z)",
+        ruleDigitOrUnderscore: "Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)",
+        ruleSymbol: "Хотя бы один специальный символ (например, ! @ # $ % *)",
+        submit: "Сохранить и продолжить",
+        skipPassword: "Пропустить пароль",
+        modalTitle: "Внимание! Вы точно хотите пропустить пароль?",
+        modalBody1: "Если вы пропустите регистрацию пароля, ваш аккаунт может быть под угрозой от мошенников или злоумышленников.",
+        modalBody2: "Также в любой момент вы можете поставить пароль.",
+        modalDisclaimer: "Разработчик не несёт ответственности за ваш аккаунт!",
+        setPasswordNow: "Установить пароль",
+        confirmSkip: "Всё равно пропустить",
+        savingText: "Это может занять некоторое время",
+        savingSubtext: "Сохраняем данные в облако...",
+        themeAuto: "Авто",
+        themeLight: "Светлая",
+        themeDark: "Тёмная",
+        errFirstName: "Укажите имя.",
+        errDob: "Укажите корректную дату рождения.",
+        errPasswordMismatch: "Пароли не совпадают.",
+        errPasswordRules: "Пароль не соответствует требованиям безопасности или нажмите «Пропустить пароль».",
+        errSave: "Ошибка сохранения в облако: ",
+        months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+        dayPrefix: "День",
+        yearPrefix: "Год"
+      },
+      en: {
+        title: "Complete registration",
+        subtitle: "Fill in your Sovva profile details",
+        firstName: "First name",
+        firstNameHint: "If signed in with Google, your name may be filled in automatically.",
+        lastName: "Last name",
+        lastNameHint: "Optional.",
+        gender: "Gender",
+        genderMale: "Male",
+        genderFemale: "Female",
+        genderUnspecified: "Unspecified",
+        dob: "Date of birth",
+        dobPlaceholder: "DD.MM.YYYY",
+        dobHint: "Select day, month, and year from the lists or type manually as DD.MM.YYYY.",
+        password: "Password",
+        passwordConfirm: "Repeat password",
+        strengthWeak: "Weak",
+        strengthMedium: "Medium",
+        strengthStrong: "Strong",
+        ruleLatin: "Latin characters only",
+        ruleUpper: "At least one uppercase letter (A–Z)",
+        ruleDigitOrUnderscore: "At least one digit (0–9) or underscore (_)",
+        ruleSymbol: "At least one special symbol (e.g. ! @ # $ % *)",
+        submit: "Save and continue",
+        skipPassword: "Skip password",
+        modalTitle: "Warning! Are you sure you want to skip the password?",
+        modalBody1: "If you skip password setup, your account may be at risk from scammers or attackers.",
+        modalBody2: "You can also set a password at any time.",
+        modalDisclaimer: "The developer is not responsible for your account!",
+        setPasswordNow: "Set password",
+        confirmSkip: "Skip anyway",
+        savingText: "This may take some time",
+        savingSubtext: "Saving data to the cloud...",
+        themeAuto: "Auto",
+        themeLight: "Light",
+        themeDark: "Dark",
+        errFirstName: "Please enter your first name.",
+        errDob: "Please enter a valid date of birth.",
+        errPasswordMismatch: "Passwords do not match.",
+        errPasswordRules: "Password does not meet the rules, or click 'Skip password'.",
+        errSave: "Cloud save error: ",
+        months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        dayPrefix: "Day",
+        yearPrefix: "Year"
+      },
+      de: {
+        title: "Registrierung abschließen",
+        subtitle: "Fülle deine Sovva-Profildaten aus",
+        firstName: "Vorname",
+        firstNameHint: "Bei Google-Anmeldung wird der Name oft automatisch eingetragen.",
+        lastName: "Nachname",
+        lastNameHint: "Optional.",
+        gender: "Geschlecht",
+        genderMale: "Männlich",
+        genderFemale: "Weiblich",
+        genderUnspecified: "Nicht angegeben",
+        dob: "Geburtsdatum",
+        dobPlaceholder: "TT.MM.JJJJ",
+        dobHint: "Tag, Monat und Jahr auswählen oder manuell als TT.MM.JJJJ eingeben.",
+        password: "Passwort",
+        passwordConfirm: "Passwort wiederholen",
+        strengthWeak: "Schwach",
+        strengthMedium: "Mittel",
+        strengthStrong: "Stark",
+        ruleLatin: "Nur lateinische Buchstaben",
+        ruleUpper: "Mindestens ein Großbuchstabe (A–Z)",
+        ruleDigitOrUnderscore: "Mindestens eine Ziffer (0–9) oder ein Unterstrich (_)",
+        ruleSymbol: "Mindestens ein Sonderzeichen (z. B. ! @ # $ % *)",
+        submit: "Speichern und fortfahren",
+        skipPassword: "Passwort überspringen",
+        modalTitle: "Achtung! Passwort wirklich überspringen?",
+        modalBody1: "Wenn du das Passwort überspringst, kann dein Konto durch Betrüger oder Angreifer gefährdet sein.",
+        modalBody2: "Du kannst jederzeit ein Passwort festlegen.",
+        modalDisclaimer: "Der Entwickler übernimmt keine Verantwortung für dein Konto!",
+        setPasswordNow: "Passwort festlegen",
+        confirmSkip: "Trotzdem überspringen",
+        savingText: "Das kann eine Weile dauern",
+        savingSubtext: "Daten werden in der Cloud gespeichert...",
+        themeAuto: "Auto",
+        themeLight: "Hell",
+        themeDark: "Dunkel",
+        errFirstName: "Bitte gib deinen Vornamen ein.",
+        errDob: "Bitte gib ein gültiges Geburtsdatum ein.",
+        errPasswordMismatch: "Die Passwörter stimmen nicht überein.",
+        errPasswordRules: "Das Passwort erfüllt nicht alle Regeln oder klicke auf „Passwort überspringen“.",
+        errSave: "Cloud-Speicherfehler: ",
+        months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+        dayPrefix: "Tag",
+        yearPrefix: "Jahr"
+      }
+    };
+
+    const langSelect = document.getElementById("langSelect");
+    const themeSelect = document.getElementById("themeSelect");
+    const dobDay = document.getElementById("dobDay");
+    const dobMonth = document.getElementById("dobMonth");
+    const dobYear = document.getElementById("dobYear");
+    const dobManualInput = document.getElementById("dobManualInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const passwordConfirmInput = document.getElementById("passwordConfirmInput");
+    const strengthFill = document.getElementById("strengthFill");
+    const strengthText = document.getElementById("strengthText");
+    const formError = document.getElementById("formError");
+    const skipModal = document.getElementById("skipModal");
+    const savingOverlay = document.getElementById("savingOverlay");
+
+        function detectInitialLang() {
+      const saved = localStorage.getItem("sovva_lang");
+      if (saved && i18n[saved]) return saved;
+      const nav = (navigator.language || "ru").toLowerCase().split("-")[0];
+      return i18n[nav] ? nav : "ru";
+    }
+
+    function populateDateSelects(lang) {
+      const t = i18n[lang];
+      const prevDay = dobDay.value;
+      const prevMonth = dobMonth.value;
+      const prevYear = dobYear.value;
+
+      dobDay.innerHTML = `<option value="">${t.dayPrefix}</option>`;
+      for (let d = 1; d <= 31; d++) {
+        const val = String(d).padStart(2, "0");
+        dobDay.innerHTML += `<option value="${val}">${val}</option>`;
+      }
+
+      dobMonth.innerHTML = `<option value="">MM</option>`;
+      t.months.forEach((name, idx) => {
+        const val = String(idx + 1).padStart(2, "0");
+        dobMonth.innerHTML += `<option value="${val}">${val} — ${name}</option>`;
+      });
+
+      const currentYear = new Date().getFullYear();
+      dobYear.innerHTML = `<option value="">${t.yearPrefix}</option>`;
+      for (let y = currentYear; y >= 1920; y--) {
+        dobYear.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+
+      if (prevDay) dobDay.value = prevDay;
+      if (prevMonth) dobMonth.value = prevMonth;
+      if (prevYear) dobYear.value = prevYear;
+    }
+
+    function applyLanguage(lang) {
+      const t = i18n[lang] || i18n.ru;
+      document.documentElement.lang = lang;
+      localStorage.setItem("sovva_lang", lang);
+      langSelect.value = lang;
+
+      document.getElementById("titleText").textContent = t.title;
+      document.getElementById("subtitleText").textContent = t.subtitle;
+      document.getElementById("firstNameLabel").textContent = t.firstName;
+      document.getElementById("firstNameHint").textContent = t.firstNameHint;
+      document.getElementById("lastNameLabel").textContent = t.lastName;
+      document.getElementById("lastNameHint").textContent = t.lastNameHint;
+      document.getElementById("genderLabel").textContent = t.gender;
+      document.getElementById("genderMale").textContent = t.genderMale;
+      document.getElementById("genderFemale").textContent = t.genderFemale;
+      document.getElementById("genderUnspecified").textContent = t.genderUnspecified;
+      document.getElementById("dobLabel").textContent = t.dob;
+      dobManualInput.placeholder = t.dobPlaceholder;
+      document.getElementById("dobHint").textContent = t.dobHint;
+      document.getElementById("passwordLabel").textContent = t.password;
+      document.getElementById("passwordConfirmLabel").textContent = t.passwordConfirm;
+      document.getElementById("ruleLatin").textContent = t.ruleLatin;
+      document.getElementById("ruleUpper").textContent = t.ruleUpper;
+      document.getElementById("ruleDigitOrUnderscore").textContent = t.ruleDigitOrUnderscore;
+      document.getElementById("ruleSymbol").textContent = t.ruleSymbol;
+      document.getElementById("submitBtn").textContent = t.submit;
+      document.getElementById("skipPasswordBtn").textContent = t.skipPassword;
+      document.getElementById("modalTitle").textContent = t.modalTitle;
+      document.getElementById("modalBody1").textContent = t.modalBody1;
+      document.getElementById("modalBody2").textContent = t.modalBody2;
+      document.getElementById("modalDisclaimer").textContent = t.modalDisclaimer;
+      document.getElementById("setPasswordNowBtn").textContent = t.setPasswordNow;
+      document.getElementById("confirmSkipBtn").textContent = t.confirmSkip;
+      document.getElementById("savingText").textContent = t.savingText;
+      document.getElementById("savingSubtext").textContent = t.savingSubtext;
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (t[key]) el.textContent = t[key];
+      });
+
+      populateDateSelects(lang);
+      updatePasswordStrength();
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("sovva_theme", theme);
+      themeSelect.value = theme;
+    }
+
+    function syncSelectsToManual() {
+      if (dobDay.value && dobMonth.value && dobYear.value) {
+        dobManualInput.value = `${dobDay.value}.${dobMonth.value}.${dobYear.value}`;
+      }
+    }
+
+    function syncManualToSelects() {
+      const match = dobManualInput.value.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+      if (!match) return;
+      const [, d, m, y] = match;
+      if ([...dobDay.options].some((o) => o.value === d)) dobDay.value = d;
+      if ([...dobMonth.options].some((o) => o.value === m)) dobMonth.value = m;
+      if ([...dobYear.options].some((o) => o.value === y)) dobYear.value = y;
+    }
+
+    function parseAndValidateDob() {
+      let d = dobDay.value;
+      let m = dobMonth.value;
+      let y = dobYear.value;
+
+      const manual = dobManualInput.value.trim();
+      if (manual) {
+        const match = manual.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+        if (!match) return null;
+        [, d, m, y] = match;
+      }
+
+      if (!d || !m || !y) return null;
+      const dayNum = Number(d);
+      const monthNum = Number(m);
+      const yearNum = Number(y);
+      const date = new Date(yearNum, monthNum - 1, dayNum);
+
+      if (
+        date.getFullYear() !== yearNum ||
+        date.getMonth() !== monthNum - 1 ||
+        date.getDate() !== dayNum
+      ) {
+        return null;
+      }
+
+      const now = new Date();
+      if (date > now || yearNum < 1920) return null;
+      return `${d}.${m}.${y}`;
+    }
+
+    function evaluatePassword(pw) {
+      const onlyLatin = pw.length > 0 && /^[A-Za-z0-9_!@#$%^&*()\-+=.?~[\]{}|;:'",/<>\\]+$/.test(pw);
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasDigitOrUnderscore = /[0-9_]/.test(pw);
+      const hasSymbol = /[^A-Za-z0-9_]/.test(pw);
+
+      const allValid = onlyLatin && hasUpper && hasDigitOrUnderscore && hasSymbol && pw.length >= 6;
+      const mediumValid = onlyLatin && pw.length >= 4 && (hasUpper || hasDigitOrUnderscore || hasSymbol);
+
+      let level = "weak";
+      if (allValid) level = "strong";
+      else if (mediumValid) level = "medium";
+
+      return { onlyLatin, hasUpper, hasDigitOrUnderscore, hasSymbol, allValid, level };
+    }
+
+    function updatePasswordStrength() {
+      const lang = langSelect.value || "ru";
+      const t = i18n[lang] || i18n.ru;
+      const pw = passwordInput.value;
+      const res = evaluatePassword(pw);
+
+      const rLatin = document.getElementById("ruleLatin");
+      const rUpper = document.getElementById("ruleUpper");
+      const rDigit = document.getElementById("ruleDigitOrUnderscore");
+      const rSym = document.getElementById("ruleSymbol");
+
+      rLatin.className = res.onlyLatin ? "rule-ok" : "";
+      rUpper.className = res.hasUpper ? "rule-ok" : "";
+      rDigit.className = res.hasDigitOrUnderscore ? "rule-ok" : "";
+      rSym.className = res.hasSymbol ? "rule-ok" : "";
+
+      if (res.level === "strong") {
+        strengthFill.style.width = "100%";
+        strengthFill.style.backgroundColor = "var(--ok)";
+        strengthText.style.color = "var(--ok)";
+        strengthText.textContent = t.strengthStrong;
+      } else if (res.level === "medium") {
+        strengthFill.style.width = "55%";
+        strengthFill.style.backgroundColor = "var(--warn)";
+        strengthText.style.color = "var(--warn)";
+        strengthText.textContent = t.strengthMedium;
+      } else {
+        strengthFill.style.width = pw.length ? "25%" : "10%";
+        strengthFill.style.backgroundColor = "var(--danger)";
+        strengthText.style.color = "var(--danger)";
+        strengthText.textContent = t.strengthWeak;
+      }
+    }
+
+    langSelect.addEventListener("change", () => applyLanguage(langSelect.value));
+    themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
+    dobDay.addEventListener("change", syncSelectsToManual);
+    dobMonth.addEventListener("change", syncSelectsToManual);
+    dobYear.addEventListener("change", syncSelectsToManual);
+    dobManualInput.addEventListener("input", syncManualToSelects);
+    passwordInput.addEventListener("input", updatePasswordStrength);
+
+    applyTheme(localStorage.getItem("sovva_theme") || "auto");
+    applyLanguage(detectInitialLang());
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      update,
+      runTransaction,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7tFnceBt_C8OnhVjfnHlXluW93FZVx7c",
+      authDomain: "sovva-dfa44.firebaseapp.com",
+      databaseURL: "https://sovva-dfa44-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-dfa44",
+      storageBucket: "sovva-dfa44.firebasestorage.app",
+      messagingSenderId: "907823494969",
+      appId: "1:907823494969:web:88ff2979a51d01f0905ae8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const firstNameInput = document.getElementById("firstNameInput");
+    const lastNameInput = document.getElementById("lastNameInput");
+    const authForm = document.getElementById("authForm");
+    const skipPasswordBtn = document.getElementById("skipPasswordBtn");
+    const setPasswordNowBtn = document.getElementById("setPasswordNowBtn");
+    const confirmSkipBtn = document.getElementById("confirmSkipBtn");
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user && user.displayName && !firstNameInput.value.trim()) {
+        const parts = user.displayName.trim().split(/\s+/);
+        firstNameInput.value = parts[0] || "";
+        if (parts.length > 1 && !lastNameInput.value.trim()) {
+          lastNameInput.value = parts.slice(1).join(" ");
+        }
+      }
+    });
+
+    async function hashPassword(pw) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pw);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    async function saveProfileToCloud(skipPassword) {
+      const lang = document.getElementById("langSelect").value || "ru";
+      const t = i18n[lang] || i18n.ru;
+      formError.textContent = "";
+
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      const gender = document.querySelector('input[name="gender"]:checked')?.value || "unspecified";
+      const dob = parseAndValidateDob();
+      const pw = passwordInput.value;
+      const pwConfirm = passwordConfirmInput.value;
+
+      if (!firstName) {
+        formError.textContent = t.errFirstName;
+        firstNameInput.focus();
+        return;
+      }
+
+      if (!dob) {
+        formError.textContent = t.errDob;
+        dobManualInput.focus();
+        return;
+      }
+
+      let passwordHash = null;
+      if (!skipPassword) {
+        const evalPw = evaluatePassword(pw);
+        if (!evalPw.allValid) {
+          formError.textContent = t.errPasswordRules;
+          passwordInput.focus();
+          return;
+        }
+        if (pw !== pwConfirm) {
+          formError.textContent = t.errPasswordMismatch;
+          passwordConfirmInput.focus();
+          return;
+        }
+        passwordHash = await hashPassword(pw);
+      }
+
+      skipModal.classList.remove("active");
+      savingOverlay.classList.add("active");
+
+      try {
+        const uid = currentUser ? currentUser.uid : "guest_" + Date.now();
+        const userRef = ref(db, "users/" + uid);
+        const snap = await get(userRef);
+        const isNew = !snap.exists();
+
+        const payload = {
+          firstName,
+          lastName,
+          gender,
+          birthDate: dob,
+          hasPassword: !skipPassword,
+          passwordHash,
+          language: lang,
+          updatedAt: serverTimestamp()
+        };
+
+        if (currentUser?.email) payload.email = currentUser.email;
+        if (isNew) payload.createdAt = serverTimestamp();
+
+        await update(userRef, payload);
+
+        if (isNew) {
+          await runTransaction(ref(db, "meta/usersCount"), (cur) => {
+            const val = typeof cur === "number" ? cur : 0;
+            return val < 100 ? val + 1 : val;
+          });
+        }
+
+        window.location.href = "./index.html";
+      } catch (err) {
+        savingOverlay.classList.remove("active");
+        formError.textContent = t.errSave + (err.code || err.message);
+      }
+    }
+
+    authForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await saveProfileToCloud(false);
+    });
+
+    skipPasswordBtn.addEventListener("click", () => {
+      skipModal.classList.add("active");
+    });
+
+    setPasswordNowBtn.addEventListener("click", () => {
+      skipModal.classList.remove("active");
+      passwordInput.focus();
+    });
+
+    confirmSkipBtn.addEventListener("click", async () => {
+      await saveProfileToCloud(true);
+    });
+  </script>
+</body>
+</html>
