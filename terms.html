@@ -1,15 +1,30 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>Sovva — Условия</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --border: #d0d7de;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --text: #f0f6fc;
+        --border: #30363d;
+      }
+    }
     body {
       font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 24px;
       max-width: 680px;
@@ -19,7 +34,7 @@
       display: inline-block;
       margin-bottom: 24px;
       padding: 8px 14px;
-      border: 1px solid #d0d7de;
+      border: 1px solid var(--border);
       border-radius: 8px;
       text-decoration: none;
       color: inherit;
