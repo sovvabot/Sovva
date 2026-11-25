@@ -101,6 +101,7 @@
       font-size: 13px;
       color: var(--muted);
       margin: 0;
+      white-space: pre-line;
     }
     footer {
       margin-top: 40px;
@@ -158,6 +159,8 @@
       <button id="logoutBtn" class="logout-btn" type="button">Выйти</button>
     </div>
 
+    <p id="dbCounter" class="status-text">Участников в базе: ...</p>
+    <p id="onlineCounter" class="status-text">Онлайн: ...</p>
     <p id="statusText" class="status-text"></p>
   </main>
 
@@ -193,10 +196,23 @@
       signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      update,
+      get,
+      set,
+      remove,
+      onValue,
+      onDisconnect,
+      runTransaction,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD7tFnceBt_C8OnhVjfnHlXluW93FZVx7c",
       authDomain: "sovva-dfa44.firebaseapp.com",
+      databaseURL: "https://sovva-dfa44-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "sovva-dfa44",
       storageBucket: "sovva-dfa44.firebasestorage.app",
       messagingSenderId: "907823494969",
@@ -205,6 +221,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
     const provider = new GoogleAuthProvider();
 
     const loginBtn = document.getElementById("loginBtn");
@@ -213,7 +230,94 @@
     const userPhoto = document.getElementById("userPhoto");
     const userName = document.getElementById("userName");
     const userEmail = document.getElementById("userEmail");
+    const dbCounter = document.getElementById("dbCounter");
+    const onlineCounter = document.getElementById("onlineCounter");
     const statusText = document.getElementById("statusText");
+
+    let isRedirectingToAuth = false;
+
+    function getWaitTimeText() {
+      const mins = Math.floor(Math.random() * (120 - 15 + 1)) + 15;
+      if (mins < 60) return `${mins} мин`;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return m > 0 ? `${h} ч ${m} мин` : `${h} ч`;
+    }
+
+    async function adjustCounter(path, delta) {
+      const counterRef = ref(db, path);
+      await runTransaction(counterRef, (current) => {
+        const val = typeof current === "number" ? current : 0;
+        const next = val + delta;
+        return next < 0 ? 0 : next;
+      });
+    }
+
+    onValue(ref(db, "meta/usersCount"), (snap) => {
+      const val = snap.val();
+      dbCounter.textContent = "Участников в базе: " + (typeof val === "number" ? val : 0);
+    }, (err) => {
+      dbCounter.textContent = "Счётчик базы: " + err.code;
+    });
+
+    onValue(ref(db, "meta/onlineCount"), (snap) => {
+      const val = snap.val();
+      onlineCounter.textContent = "Онлайн: " + (typeof val === "number" ? val : 0);
+    }, (err) => {
+      onlineCounter.textContent = "Счётчик онлайн: " + err.code;
+    });
+
+    async function saveUserToDatabase(user) {
+      const userRef = ref(db, "users/" + user.uid);
+      const snap = await get(userRef);
+      const existingData = snap.exists() ? snap.val() : null;
+      const isNewUser = !existingData;
+
+      const userData = {
+        name: user.displayName || "Пользователь",
+        email: user.email || "",
+        photo: user.photoURL || "",
+        lastLogin: serverTimestamp()
+      };
+
+      if (isNewUser) {
+        userData.createdAt = serverTimestamp();
+      }
+
+      await update(userRef, userData);
+
+      if (isNewUser) {
+        await adjustCounter("meta/usersCount", 1);
+      }
+
+      return existingData;
+    }
+
+    async function enterOnline(user) {
+      const myOnlineRef = ref(db, "online/" + user.uid);
+      const existing = await get(myOnlineRef);
+      const wasOnline = existing.exists();
+
+      await set(myOnlineRef, {
+        name: user.displayName || "Пользователь",
+        joinedAt: serverTimestamp()
+      });
+
+      if (!wasOnline) {
+        await adjustCounter("meta/onlineCount", 1);
+      }
+
+      onDisconnect(myOnlineRef).remove();
+    }
+
+    async function leaveOnline(uid) {
+      const myOnlineRef = ref(db, "online/" + uid);
+      const existing = await get(myOnlineRef);
+      if (existing.exists()) {
+        await remove(myOnlineRef);
+        await adjustCounter("meta/onlineCount", -1);
+      }
+    }
 
     loginBtn.addEventListener("click", async () => {
       statusText.textContent = "Открываем окно Google...";
@@ -226,11 +330,18 @@
     });
 
     logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      statusText.textContent = "Вы вышли из аккаунта";
+      try {
+        if (auth.currentUser) {
+          await leaveOnline(auth.currentUser.uid);
+        }
+        await signOut(auth);
+        statusText.textContent = "Вы вышли из аккаунта";
+      } catch (err) {
+        statusText.textContent = "Ошибка выхода: " + err.code;
+      }
     });
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         loginBtn.style.display = "none";
         userBox.style.display = "flex";
@@ -238,6 +349,29 @@
         userEmail.textContent = user.email || "";
         userPhoto.src = user.photoURL || "";
         userPhoto.style.display = user.photoURL ? "block" : "none";
+
+        try {
+          const existingProfile = await saveUserToDatabase(user);
+          await enterOnline(user);
+          statusText.textContent = "";
+
+          const hasCompletedAuthForm = Boolean(
+            existingProfile && existingProfile.firstName && existingProfile.birthDate
+          );
+
+          if (!hasCompletedAuthForm && !isRedirectingToAuth) {
+            isRedirectingToAuth = true;
+            window.location.href = "./auth.html";
+          }
+        } catch (err) {
+          if (err.code === "PERMISSION_DENIED") {
+            statusText.textContent =
+              `Упс!!! Кажется, онлайн базы в реальном времени сейчас недоступен.\n` +
+              `Подождите, когда база в реальном времени обновится через ${getWaitTimeText()} — сервер сбросится с нуля, и можно будет заходить снова.`;
+          } else {
+            statusText.textContent = "Ошибка базы: " + err.code;
+          }
+        }
       } else {
         loginBtn.style.display = "inline-flex";
         userBox.style.display = "none";
