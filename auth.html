@@ -434,7 +434,6 @@
     </form>
   </div>
 
-  <!-- Модальное окно предупреждения о пропуске пароля -->
   <div id="skipModal" class="saving-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <h2 id="modalTitle">Внимание! Вы точно хотите пропустить пароль?</h2>
@@ -448,7 +447,6 @@
     </div>
   </div>
 
-  <!-- Оверлей сохранения в облако -->
   <div id="savingOverlay" class="saving-overlay" aria-live="polite">
     <div class="modal" style="text-align:center;">
       <div class="spinner"></div>
@@ -907,7 +905,7 @@
         const uid = currentUser ? currentUser.uid : "guest_" + Date.now();
         const userRef = ref(db, "users/" + uid);
         const snap = await get(userRef);
-        const isNew = !snap.exists();
+        const alreadyCompleted = Boolean(snap.exists() && snap.val()?.registrationCompleted);
 
         const payload = {
           firstName,
@@ -916,16 +914,18 @@
           birthDate: dob,
           hasPassword: !skipPassword,
           passwordHash,
+          registrationCompleted: true,
           language: lang,
           updatedAt: serverTimestamp()
         };
 
         if (currentUser?.email) payload.email = currentUser.email;
-        if (isNew) payload.createdAt = serverTimestamp();
+        if (currentUser?.photoURL) payload.photo = currentUser.photoURL;
+        if (!alreadyCompleted) payload.createdAt = serverTimestamp();
 
         await update(userRef, payload);
 
-        if (isNew) {
+        if (!alreadyCompleted) {
           await runTransaction(ref(db, "meta/usersCount"), (cur) => {
             const val = typeof cur === "number" ? cur : 0;
             return val < 100 ? val + 1 : val;
