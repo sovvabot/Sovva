@@ -3,14 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>Sovva</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --muted: #656d76;
+      --border: #d0d7de;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+      }
+    }
     * { box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 24px;
       min-height: 100vh;
@@ -35,7 +52,7 @@
     .footer-btn {
       display: inline-block;
       padding: 8px 14px;
-      border: 1px solid #d0d7de;
+      border: 1px solid var(--border);
       border-radius: 8px;
       text-decoration: none;
       color: inherit;
@@ -45,7 +62,7 @@
     .copyright {
       margin: 0;
       font-size: 13px;
-      color: #656d76;
+      color: var(--muted);
     }
   </style>
 </head>
