@@ -36,23 +36,22 @@
       background-color: rgba(0, 0, 0, 0.05);
     }
 
-    section {
-      padding: 18px 0;
-      border-bottom: 1px solid #e5e7eb;
+    .screen {
+      display: none;
     }
 
-    section:last-of-type {
-      border-bottom: none;
+    .screen.active {
+      display: block;
     }
 
     h2 {
-      margin: 0 0 10px 0;
-      font-size: 20px;
+      margin: 0 0 12px 0;
+      font-size: 22px;
       font-weight: 700;
     }
 
     p {
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
       font-size: 15px;
     }
 
@@ -79,18 +78,18 @@
 <body>
   <a class="back-btn" href="./index.html">← Назад</a>
 
-  <section id="terms">
+  <section id="terms" class="screen">
     <h2>Условия</h2>
     <p>Наша платформа Sovva — соцсеть для поиска друзей из вашего знакомого места и т.д. — сейчас находится в закрытом бета-тестировании.</p>
     <p>Доступ к бета-версии для всех откроется 05.12.2026.</p>
   </section>
 
-  <section id="privacy">
+  <section id="privacy" class="screen">
     <h2>Конфиденциальность</h2>
     <p>Конфиденциальность и правила соцсети Sovva пока не установлены. Правила и конфиденциальность будут сделаны 09.12.2026 года.</p>
   </section>
 
-  <section id="support">
+  <section id="support" class="screen">
     <h2>Поддержка</h2>
     <p>Есть вопросы, баги или дополнения и улучшения для нашей платформы? Напишите в нашу почту поддержки, если хотите поделиться своим мнением!</p>
     <div class="mail-row">
@@ -103,5 +102,29 @@
       <a href="mailto:sovvabots@gmail.com">sovvabots@gmail.com</a>
     </div>
   </section>
+
+  <script>
+    function showCurrentScreen() {
+      const hash = window.location.hash.replace("#", "") || "terms";
+      const screens = document.querySelectorAll(".screen");
+      let found = false;
+
+      screens.forEach((screen) => {
+        if (screen.id === hash) {
+          screen.classList.add("active");
+          found = true;
+        } else {
+          screen.classList.remove("active");
+        }
+      });
+
+      if (!found) {
+        document.getElementById("terms").classList.add("active");
+      }
+    }
+
+    showCurrentScreen();
+    window.addEventListener("hashchange", showCurrentScreen);
+  </script>
 </body>
 </html>
