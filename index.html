@@ -267,30 +267,22 @@
       onlineCounter.textContent = "Счётчик онлайн: " + err.code;
     });
 
-    async function saveUserToDatabase(user) {
+    // Пишем в users ТОЛЬКО если пользователь уже завершил регистрацию на auth.html
+    async function touchRegisteredUser(user) {
       const userRef = ref(db, "users/" + user.uid);
       const snap = await get(userRef);
-      const existingData = snap.exists() ? snap.val() : null;
-      const isNewUser = !existingData;
+      if (!snap.exists()) return null;
 
-      const userData = {
-        name: user.displayName || "Пользователь",
-        email: user.email || "",
-        photo: user.photoURL || "",
+      const data = snap.val();
+      if (!data.registrationCompleted) return data;
+
+      await update(userRef, {
+        email: user.email || data.email || "",
+        photo: user.photoURL || data.photo || "",
         lastLogin: serverTimestamp()
-      };
+      });
 
-      if (isNewUser) {
-        userData.createdAt = serverTimestamp();
-      }
-
-      await update(userRef, userData);
-
-      if (isNewUser) {
-        await adjustCounter("meta/usersCount", 1);
-      }
-
-      return existingData;
+      return data;
     }
 
     async function enterOnline(user) {
@@ -351,15 +343,15 @@
         userPhoto.style.display = user.photoURL ? "block" : "none";
 
         try {
-          const existingProfile = await saveUserToDatabase(user);
+          const profile = await touchRegisteredUser(user);
           await enterOnline(user);
           statusText.textContent = "";
 
-          const hasCompletedAuthForm = Boolean(
-            existingProfile && existingProfile.firstName && existingProfile.birthDate
+          const isRegistered = Boolean(
+            profile && profile.registrationCompleted && profile.firstName && profile.birthDate
           );
 
-          if (!hasCompletedAuthForm && !isRedirectingToAuth) {
+          if (!isRegistered && !isRedirectingToAuth) {
             isRedirectingToAuth = true;
             window.location.href = "./auth.html";
           }
