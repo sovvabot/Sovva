@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sovva — Информация</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 24px;
+      max-width: 680px;
+      line-height: 1.6;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 24px;
+      padding: 8px 14px;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .back-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    section {
+      padding: 18px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+    }
+
+    .mail-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .mail-row svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .mail-row a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <a class="back-btn" href="./index.html">← Назад</a>
+
+  <section id="terms">
+    <h2>Условия</h2>
+    <p>Наша платформа Sovva — соцсеть для поиска друзей из вашего знакомого места и т.д. — сейчас находится в закрытом бета-тестировании.</p>
+    <p>Доступ к бета-версии для всех откроется 05.12.2026.</p>
+  </section>
+
+  <section id="privacy">
+    <h2>Конфиденциальность</h2>
+    <p>Конфиденциальность и правила соцсети Sovva пока не установлены. Правила и конфиденциальность будут сделаны 09.12.2026 года.</p>
+  </section>
+
+  <section id="support">
+    <h2>Поддержка</h2>
+    <p>Есть вопросы, баги или дополнения и улучшения для нашей платформы? Напишите в нашу почту поддержки, если хотите поделиться своим мнением!</p>
+    <div class="mail-row">
+      <span>Почта</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+      </svg>
+      <span>:</span>
+      <a href="mailto:sovvabots@gmail.com">sovvabots@gmail.com</a>
+    </div>
+  </section>
+</body>
+</html>
