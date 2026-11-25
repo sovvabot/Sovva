@@ -8,10 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
@@ -21,7 +18,6 @@
       flex-direction: column;
       justify-content: space-between;
     }
-
     footer {
       margin-top: 40px;
       display: flex;
@@ -30,14 +26,12 @@
       gap: 12px;
       text-align: center;
     }
-
     .footer-links {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
     }
-
     .footer-btn {
       display: inline-block;
       padding: 8px 14px;
@@ -48,11 +42,6 @@
       font-size: 14px;
       font-weight: 500;
     }
-
-    .footer-btn:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-
     .copyright {
       margin: 0;
       font-size: 13px;
@@ -67,9 +56,9 @@
 
   <footer>
     <div class="footer-links">
-      <a class="footer-btn" href="./legal.html#terms">Условия</a>
-      <a class="footer-btn" href="./legal.html#privacy">Конфиденциальность</a>
-      <a class="footer-btn" href="./legal.html#support">Поддержка</a>
+      <a class="footer-btn" href="./terms.html">Условия</a>
+      <a class="footer-btn" href="./privacy.html">Конфиденциальность</a>
+      <a class="footer-btn" href="./support.html">Поддержка</a>
     </div>
     <p class="copyright">©2026 Sovva. All rights reserved</p>
   </footer>
@@ -83,13 +72,9 @@
       zh: "欢迎",
       pt: "Bem-vindo"
     };
-
-    const userLang = (navigator.language || navigator.userLanguage || "en").toLowerCase();
-    const shortLang = userLang.split("-")[0];
-
-    const selectedText = translations[shortLang] || translations.en;
+    const shortLang = (navigator.language || "en").toLowerCase().split("-")[0];
     document.documentElement.lang = translations[shortLang] ? shortLang : "en";
-    document.getElementById("welcome").textContent = selectedText;
+    document.getElementById("welcome").textContent = translations[shortLang] || translations.en;
   </script>
 </body>
 </html>
