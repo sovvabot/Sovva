@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sovva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="welcome">Welcome</h1>
+
+  <script>
+    const translations = {
+      ru: "Добро пожаловать",
+      en: "Welcome",
+      de: "Willkommen",
+      uk: "Ласкаво просимо",
+      zh: "欢迎",
+      pt: "Bem-vindo"
+    };
+
+    const userLang = (navigator.language || navigator.userLanguage || "en").toLowerCase();
+    const shortLang = userLang.split("-")[0];
+
+    const selectedText = translations[shortLang] || translations.en;
+    document.documentElement.lang = translations[shortLang] ? shortLang : "en";
+    document.getElementById("welcome").textContent = selectedText;
+  </script>
+</body>
+</html>
