@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
-  <title>Sovva — Вход</title>
+  <title>Sovva — Sign in</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -25,8 +25,10 @@
       background: #ffffff;
       color: #111827;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+      gap: 16px;
     }
 
     .card {
@@ -83,23 +85,70 @@
       background: #0550ae;
     }
 
+    .btn-google:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
     .err {
       color: #dc2626;
       font-size: 13px;
       min-height: 18px;
+    }
+
+    .footer {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #4b5563;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #111827;
+      text-decoration: underline;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #6b7280;
     }
   </style>
 </head>
 <body>
   <main class="card">
     <div class="brand">Sovva</div>
-    <h1>Добро пожаловать</h1>
-    <p>Войдите через Google аккаунт, чтобы продолжить или создать профиль.</p>
+    <h1>Welcome</h1>
+    <p>Sign in with your Google account to continue or create your profile.</p>
     <div id="errMsg" class="err"></div>
     <button id="googleLoginBtn" type="button" class="btn-google">
-      <span>Войти через Google</span>
+      <span>Continue with Google</span>
     </button>
   </main>
+
+  <footer class="footer">
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="./support.html">Support</a>
+      <a href="./terms.html">Terms</a>
+      <a href="./privacy.html">Privacy</a>
+    </nav>
+    <div class="copyright">© 2026 Sovva, All rights reserved</div>
+  </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -134,6 +183,7 @@
     async function routeAfterAuth(user) {
       if (!user || routingStarted) return;
       routingStarted = true;
+      googleLoginBtn.disabled = true;
 
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
@@ -146,7 +196,8 @@
         }
       } catch (e) {
         routingStarted = false;
-        errMsg.textContent = e?.message || "Ошибка при проверке профиля.";
+        googleLoginBtn.disabled = false;
+        errMsg.textContent = e?.message || "Failed to check profile.";
       }
     }
 
@@ -157,7 +208,7 @@
         }
       })
       .catch((err) => {
-        errMsg.textContent = err?.message || "Ошибка входа через Google.";
+        errMsg.textContent = err?.message || "Google sign-in error.";
       });
 
     onAuthStateChanged(auth, (user) => {
@@ -168,10 +219,12 @@
 
     googleLoginBtn.addEventListener("click", async () => {
       errMsg.textContent = "";
+      googleLoginBtn.disabled = true;
       try {
         await signInWithRedirect(auth, provider);
       } catch (err) {
-        errMsg.textContent = err?.message || "Не удалось запустить вход через Google.";
+        googleLoginBtn.disabled = false;
+        errMsg.textContent = err?.message || "Could not start Google sign-in.";
       }
     });
   </script>
