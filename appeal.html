@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Sovva — Апелляция на разблокировку</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --input-bg: #ffffff;
+      --btn-bg: #111827;
+      --btn-text: #ffffff;
+      --ok: #1a7f37;
+      --warn: #9a6700;
+      --danger: #cf222e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --input-bg: #0d1117;
+        --btn-bg: #f0f6fc;
+        --btn-text: #0d1117;
+        --ok: #3fb950;
+        --warn: #d29922;
+        --danger: #f85149;
+      }
+    }
+    * { box-sizing: border-box; }
+    body, textarea, button {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .card {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .title { margin: 0; font-size: 19px; font-weight: 700; }
+    .muted { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+    .ban-box {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      resize: vertical;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary { background: var(--btn-bg); color: var(--btn-text); border-color: var(--btn-bg); }
+    .btn-secondary { background: transparent; color: var(--text); }
+    .msg-ok { color: var(--ok); font-size: 13px; min-height: 18px; }
+    .msg-err { color: var(--danger); font-size: 13px; min-height: 18px; }
+    .appeal-item {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="title">Апелляция на разблокировку</h1>
+    <p class="muted">
+      Если ваш аккаунт заблокирован, опишите ситуацию. Когда администратор или владелец одобрит апелляцию, вы сможете снова использовать аккаунт.
+    </p>
+
+    <div id="banInfoBox" class="ban-box">Проверка статуса аккаунта...</div>
+
+    <textarea id="appealTextInput" class="textarea" placeholder="Почему вы считаете, что аккаунт стоит разблокировать..."></textarea>
+    <button id="sendAppealBtn" class="btn btn-primary" type="button">Отправить апелляцию</button>
+    <div id="appealOk" class="msg-ok"></div>
+    <div id="appealErr" class="msg-err"></div>
+
+    <a href="./sovva.html" class="btn btn-secondary">Вернуться в профиль</a>
+
+    <div style="display:flex; flex-direction:column; gap:8px; padding-top:8px; border-top:1px solid var(--border);">
+      <strong style="font-size:14px;">Ваши апелляции</strong>
+      <div id="myAppealsList" class="muted">Загрузка...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onValue,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
+      authDomain: "sovva-e2c64.firebaseapp.com",
+      databaseURL: "https://sovva-e2c64-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-e2c64",
+      storageBucket: "sovva-e2c64.firebasestorage.app",
+      messagingSenderId: "71366651741",
+      appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const banInfoBox = document.getElementById("banInfoBox");
+    const appealTextInput = document.getElementById("appealTextInput");
+    const sendAppealBtn = document.getElementById("sendAppealBtn");
+    const appealOk = document.getElementById("appealOk");
+    const appealErr = document.getElementById("appealErr");
+    const myAppealsList = document.getElementById("myAppealsList");
+
+    let currentUser = null;
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.replace("./index.html");
+        return;
+      }
+      currentUser = user;
+
+      onValue(ref(db, `users/${user.uid}`), (snap) => {
+        const profile = snap.exists() ? snap.val() : {};
+        const isBanned = Boolean(profile.isBanned || profile.sanction?.type === "account_ban");
+        if (isBanned) {
+          banInfoBox.innerHTML = `
+            <div style="color:var(--danger); font-weight:700;">Аккаунт заблокирован</div>
+            <div>Причина: ${escapeHtml(profile.sanction?.reason || "Не указана")}</div>
+          `;
+        } else {
+          banInfoBox.innerHTML = `
+            <div style="color:var(--ok); font-weight:700;">Аккаунт активен и разблокирован</div>
+            <div>Вы можете снова пользоваться профилем Sovva.</div>
+          `;
+        }
+      });
+
+      onValue(ref(db, `appeals/${user.uid}`), (snap) => {
+        const val = snap.exists() ? snap.val() : {};
+        const entries = Object.entries(val).reverse();
+        if (entries.length === 0) {
+          myAppealsList.innerHTML = `<div class="muted">Вы ещё не отправляли апелляций.</div>`;
+          return;
+        }
+        myAppealsList.innerHTML = entries.map(([, ap]) => {
+          const statusText = ap.status === "approved"
+            ? `<span style="color:var(--ok); font-weight:600;">Одобрена — аккаунт разблокирован</span>`
+            : ap.status === "rejected"
+              ? `<span style="color:var(--danger); font-weight:600;">Отклонена</span>`
+              : `<span style="color:var(--warn); font-weight:600;">На рассмотрении</span>`;
+          return `
+            <div class="appeal-item">
+              <div>${statusText}</div>
+              <div>${escapeHtml(ap.text || "")}</div>
+              ${ap.decisionReason ? `<div class="muted">Ответ: ${escapeHtml(ap.decisionReason)}</div>` : ""}
+            </div>
+          `;
+        }).join("");
+      });
+    });
+
+    sendAppealBtn.addEventListener("click", async () => {
+      appealOk.textContent = "";
+      appealErr.textContent = "";
+      if (!currentUser) return;
+
+      const text = appealTextInput.value.trim();
+      if (!text) {
+        appealErr.textContent = "Напишите текст апелляции перед отправкой.";
+        return;
+      }
+
+      try {
+        await push(ref(db, `appeals/${currentUser.uid}`), {
+          uid: currentUser.uid,
+          text,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+        appealTextInput.value = "";
+        appealOk.textContent = "Апелляция отправлена на рассмотрение.";
+      } catch (err) {
+        appealErr.textContent = "Ошибка отправки: " + (err.message || err.code);
+      }
+    });
+  </script>
+</body>
+</html>
