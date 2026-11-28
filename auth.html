@@ -415,7 +415,7 @@
       <p id="subtitleText" class="subtitle">Укажите имя и при желании фамилию</p>
     </div>
 
-    <!-- ЭКРАН ВХОДА ПО ПАРОЛЮ (если пароль установлен в облаке) -->
+    <!-- ЭКРАН ВХОДА ПО ПАРОЛЮ -->
     <section id="loginPasswordScreen" class="screen" aria-label="Password login screen">
       <div class="field">
         <label for="loginPasswordInput" id="loginPasswordLabel">Введите пароль от аккаунта</label>
@@ -515,7 +515,7 @@
             <button id="backFromStep3Btn" class="btn-secondary" type="button">Назад</button>
             <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
           </div>
-          <button id="skipPasswordBtn" class="btn-secondary" type="button" disabled>Пропустить пароль (нужен уровень «Средний»)</button>
+          <button id="skipPasswordBtn" class="btn-secondary" type="button" disabled>Пропустить пароль</button>
         </div>
       </section>
 
@@ -1092,6 +1092,8 @@
 
     let currentUser = null;
     let cloudProfile = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const modeParam = urlParams.get("mode");
 
     async function hashPassword(pw) {
       const encoder = new TextEncoder();
@@ -1106,26 +1108,24 @@
       currentUser = user;
       if (!user) return;
 
-      if (user.displayName && !firstNameInput.value.trim()) {
-        const parts = user.displayName.trim().split(/\s+/);
-        firstNameInput.value = parts[0] || "";
-        if (parts.length > 1 && !lastNameInput.value.trim()) {
-          lastNameInput.value = parts.slice(1).join(" ");
-        }
-      }
-
-            try {
+      try {
         const snap = await get(ref(db, "users/" + user.uid));
-        if (!snap.exists()) return;
-        const profile = snap.val();
+        const profile = snap.exists() ? snap.val() : null;
         cloudProfile = profile;
 
-        if (profile.registrationCompleted === true) {
-          if (profile.hasPassword === true && profile.passwordHash) {
-            const nick = profile.firstName || user.displayName || "Пользователь";
-            window.setReturningPasswordMode(nick);
-          } else {
-            window.location.replace("./sovva.html");
+                if (modeParam === "login" && profile && profile.registrationCompleted === true && profile.hasPassword === true && profile.passwordHash) {
+          const nick = profile.firstName || user.displayName || "Пользователь";
+          window.setReturningPasswordMode(nick);
+          return;
+        }
+
+        if (!profile || profile.registrationCompleted !== true) {
+          if (user.displayName && !firstNameInput.value.trim()) {
+            const parts = user.displayName.trim().split(/\s+/);
+            firstNameInput.value = parts[0] || "";
+            if (parts.length > 1 && !lastNameInput.value.trim()) {
+              lastNameInput.value = parts.slice(1).join(" ");
+            }
           }
         }
       } catch (_) {}
