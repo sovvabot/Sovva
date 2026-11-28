@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Sovva — Профиль</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --input-bg: #ffffff;
+      --btn-bg: #111827;
+      --btn-text: #ffffff;
+      --danger: #cf222e;
+      --ok: #1a7f37;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --input-bg: #0d1117;
+        --btn-bg: #f0f6fc;
+        --btn-text: #0d1117;
+        --danger: #f85149;
+        --ok: #3fb950;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .nickname {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .lastname {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border-color: var(--btn-bg);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+    }
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+    .msg-ok {
+      font-size: 13px;
+      color: var(--ok);
+      min-height: 18px;
+    }
+    .msg-err {
+      font-size: 13px;
+      color: var(--danger);
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="profile-header">
+      <img id="avatarImg" class="avatar" src="" alt="" style="display:none;" />
+      <div id="avatarFallback" class="avatar">S</div>
+      <div>
+        <h1 id="nicknameText" class="nickname">Загрузка...</h1>
+        <div id="lastNameText" class="lastname"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 id="passwordSectionTitle" class="section-title">Установить или изменить пароль</h2>
+      <input id="newPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Новый пароль (A-Z, цифра или _, символ, от 6 символов)" />
+      <input id="confirmNewPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Повторите новый пароль" />
+      <button id="savePasswordBtn" class="btn btn-primary" type="button">Сохранить пароль</button>
+      <div id="statusOk" class="msg-ok"></div>
+      <div id="statusErr" class="msg-err"></div>
+    </div>
+
+    <div class="section">
+      <button id="logoutBtn" class="btn btn-secondary" type="button">Выйти из аккаунта</button>
+      <button id="deleteAccountBtn" class="btn btn-danger" type="button">Удалить аккаунт</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      update,
+      remove,
+      runTransaction,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
+      authDomain: "sovva-e2c64.firebaseapp.com",
+      databaseURL: "https://sovva-e2c64-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-e2c64",
+      storageBucket: "sovva-e2c64.firebasestorage.app",
+      messagingSenderId: "71366651741",
+      appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const avatarImg = document.getElementById("avatarImg");
+    const avatarFallback = document.getElementById("avatarFallback");
+    const nicknameText = document.getElementById("nicknameText");
+    const lastNameText = document.getElementById("lastNameText");
+    const passwordSectionTitle = document.getElementById("passwordSectionTitle");
+    const newPasswordInput = document.getElementById("newPasswordInput");
+    const confirmNewPasswordInput = document.getElementById("confirmNewPasswordInput");
+    const savePasswordBtn = document.getElementById("savePasswordBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+    const statusOk = document.getElementById("statusOk");
+    const statusErr = document.getElementById("statusErr");
+
+    let currentUser = null;
+
+    function isStrongPassword(pw) {
+      const onlyLatin = /^[A-Za-z0-9_!@#$%^&*()\-+=.?~[\]{}|;:'",/<>\\]+$/.test(pw);
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasDigitOrUnderscore = /[0-9_]/.test(pw);
+      const hasSymbol = /[^A-Za-z0-9_]/.test(pw);
+      return pw.length >= 6 && onlyLatin && hasUpper && hasDigitOrUnderscore && hasSymbol;
+    }
+
+    async function hashPassword(pw) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pw);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.replace("./index.html");
+        return;
+      }
+      currentUser = user;
+
+      const snap = await get(ref(db, "users/" + user.uid));
+      const profile = snap.exists() ? snap.val() : null;
+
+      if (!profile || profile.registrationCompleted !== true) {
+        window.location.replace("./auth.html");
+        return;
+      }
+
+      const nick = profile.firstName || user.displayName || "Пользователь";
+      const last = profile.lastName || "";
+
+      nicknameText.textContent = nick;
+      lastNameText.textContent = last;
+      passwordSectionTitle.textContent = profile.hasPassword ? "Изменить пароль" : "Установить пароль";
+
+      const photoUrl = profile.photo || user.photoURL || "";
+      if (photoUrl) {
+        avatarImg.src = photoUrl;
+        avatarImg.style.display = "block";
+        avatarFallback.style.display = "none";
+      } else {
+        avatarFallback.textContent = nick.charAt(0).toUpperCase() || "S";
+      }
+    });
+
+    savePasswordBtn.addEventListener("click", async () => {
+      statusOk.textContent = "";
+      statusErr.textContent = "";
+
+      const pw = newPasswordInput.value;
+      const pw2 = confirmNewPasswordInput.value;
+
+      if (!isStrongPassword(pw)) {
+        statusErr.textContent = "Пароль должен быть от 6 символов, на латинице, содержать заглавную букву, цифру или _ и спецсимвол.";
+        return;
+      }
+      if (pw !== pw2) {
+        statusErr.textContent = "Пароли не совпадают.";
+        return;
+      }
+
+      try {
+        const hash = await hashPassword(pw);
+        await update(ref(db, "users/" + currentUser.uid), {
+          hasPassword: true,
+          passwordHash: hash,
+          updatedAt: serverTimestamp()
+        });
+        newPasswordInput.value = "";
+        confirmNewPasswordInput.value = "";
+        passwordSectionTitle.textContent = "Изменить пароль";
+        statusOk.textContent = "Пароль сохранён в облаке.";
+      } catch (err) {
+        statusErr.textContent = "Ошибка: " + (err.code || err.message);
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      if (currentUser) {
+        await remove(ref(db, "online/" + currentUser.uid)).catch(() => {});
+      }
+      await signOut(auth);
+      window.location.replace("./index.html");
+    });
+
+    deleteAccountBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+      const uid = currentUser.uid;
+      try {
+        const userSnap = await get(ref(db, "users/" + uid));
+        const existed = userSnap.exists();
+
+        await remove(ref(db, "users/" + uid));
+        await remove(ref(db, "online/" + uid)).catch(() => {});
+
+        if (existed) {
+          await runTransaction(ref(db, "meta/usersCount"), (cur) => {
+            const val = typeof cur === "number" ? cur : 0;
+            return val > 0 ? val - 1 : 0;
+          });
+        }
+
+        try {
+          await deleteUser(currentUser);
+        } catch (_) {
+          await signOut(auth);
+        }
+
+        window.location.replace("./index.html");
+      } catch (err) {
+        statusErr.textContent = "Ошибка удаления: " + (err.code || err.message);
+      }
+    });
+  </script>
+</body>
+  </html>
+  
