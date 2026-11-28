@@ -20,6 +20,10 @@
       --btn-text: #ffffff;
       --accent: #374151;
       --ok: #1a7f37;
+      --warn: #9a6700;
+      --danger: #cf222e;
+      --warn-bg: rgba(154, 103, 0, 0.1);
+      --danger-bg: rgba(207, 34, 46, 0.1);
       --sheet-bg: #ffffff;
       --backdrop: rgba(0, 0, 0, 0.45);
       --badge-bg: #eef2f6;
@@ -36,6 +40,10 @@
         --btn-text: #0d1117;
         --accent: #c9d1d9;
         --ok: #3fb950;
+        --warn: #d29922;
+        --danger: #f85149;
+        --warn-bg: rgba(210, 153, 34, 0.14);
+        --danger-bg: rgba(248, 81, 73, 0.14);
         --sheet-bg: #161b22;
         --backdrop: rgba(0, 0, 0, 0.65);
         --badge-bg: #21262d;
@@ -107,6 +115,39 @@
       align-items: center;
     }
     .lastname { font-size: 14px; color: var(--muted); margin-top: 2px; }
+
+    .sanction-banner {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--warn);
+      background: var(--warn-bg);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .sanction-banner.visible { display: flex; }
+    .sanction-banner.danger {
+      border-color: var(--danger);
+      background: var(--danger-bg);
+    }
+    .sanction-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--warn);
+    }
+    .sanction-banner.danger .sanction-title {
+      color: var(--danger);
+    }
+    .sanction-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
     .section {
       display: flex;
       flex-direction: column;
@@ -132,12 +173,18 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-primary { background: var(--btn-bg); color: var(--btn-text); border-color: var(--btn-bg); }
     .btn-secondary { background: transparent; color: var(--text); }
     .btn-action { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .btn-danger { background: var(--danger); color: #ffffff; border-color: var(--danger); }
     .msg-ok { font-size: 13px; color: var(--ok); min-height: 18px; }
-    .msg-err { font-size: 13px; color: var(--text); min-height: 18px; }
+    .msg-err { font-size: 13px; color: var(--danger); min-height: 18px; }
+    .hidden { display: none !important; }
 
     /* Нижнее окно (Bottom Sheet) со свайпом вниз */
     .sheet-backdrop {
@@ -226,7 +273,15 @@
       </div>
     </div>
 
-    <div class="section">
+    <!-- Уведомление о страйке, предупреждении или блокировке аккаунта -->
+    <div id="sanctionBanner" class="sanction-banner">
+      <div id="sanctionTitle" class="sanction-title"></div>
+      <div id="sanctionReasonText"></div>
+      <ul id="sanctionRestrictionsList" class="sanction-list"></ul>
+      <a id="appealLinkBtn" href="./appeal.html" class="btn btn-danger hidden">Подать апелляцию на разблокировку</a>
+    </div>
+
+    <div id="accountControls" class="section">
       <h2 id="passwordSectionTitle" class="section-title">Установить или изменить пароль</h2>
       <input id="newPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Новый пароль" />
       <input id="confirmNewPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Повторите новый пароль" />
@@ -316,6 +371,14 @@
     const nicknameText = document.getElementById("nicknameText");
     const roleBadge = document.getElementById("roleBadge");
     const lastNameText = document.getElementById("lastNameText");
+
+    const sanctionBanner = document.getElementById("sanctionBanner");
+    const sanctionTitle = document.getElementById("sanctionTitle");
+    const sanctionReasonText = document.getElementById("sanctionReasonText");
+    const sanctionRestrictionsList = document.getElementById("sanctionRestrictionsList");
+    const appealLinkBtn = document.getElementById("appealLinkBtn");
+    const accountControls = document.getElementById("accountControls");
+
     const passwordSectionTitle = document.getElementById("passwordSectionTitle");
     const newPasswordInput = document.getElementById("newPasswordInput");
     const confirmNewPasswordInput = document.getElementById("confirmNewPasswordInput");
@@ -345,6 +408,7 @@
     let foreignSessionId = null;
     let unsubActiveSession = null;
     let unsubSessions = null;
+    let unsubProfile = null;
     let sessionReady = false;
 
     const sessionId = sessionStorage.getItem("sovva_session_id") ||
@@ -372,6 +436,64 @@
       }
     }
 
+    function renderSanctionBanner(profile) {
+      const s = profile?.sanction || null;
+      const now = Date.now();
+      const isPermanentBan = Boolean(profile?.isBanned || s?.type === "account_ban");
+
+      if (isPermanentBan) {
+        sanctionBanner.classList.add("visible", "danger");
+        sanctionTitle.textContent = "Ваш аккаунт заблокирован навсегда";
+        sanctionReasonText.textContent = `Причина: ${s?.reason || "Нарушение правил платформы Sovva"}`;
+        sanctionRestrictionsList.innerHTML = `
+          <li>Доступ к аккаунту ограничен</li>
+          <li>Вы можете подать апелляцию — если её одобрят, аккаунт снова будет разблокирован</li>
+        `;
+        appealLinkBtn.classList.remove("hidden");
+        accountControls.classList.add("hidden");
+        return;
+      }
+
+      appealLinkBtn.classList.add("hidden");
+      accountControls.classList.remove("hidden");
+
+      if (s && s.expiresAt && s.expiresAt > now) {
+        const isSevere = s.type === "ban_notice";
+        sanctionBanner.classList.toggle("danger", isSevere);
+        sanctionBanner.classList.add("visible");
+
+        const untilStr = new Date(s.expiresAt).toLocaleString("ru-RU");
+        sanctionTitle.textContent = `${s.label || "Ограничение аккаунта"} (до ${untilStr})`;
+        sanctionReasonText.textContent = `Причина: ${s.reason || "Не указана"}`;
+
+        const items = [];
+        const r = s.restrictions || {};
+        if (s.type === "first_warning") {
+          if (r.canUploadVideo === false) {
+            items.push("Выкладывание видео заблокировано на 2 дня из-за массового запрещённого контента");
+          } else {
+            items.push("Предупреждение без ограничений функций");
+          }
+          items.push("Просмотр публикаций, комментарии и ЛС открыты");
+        } else if (s.type === "first_strike") {
+          items.push(`Выкладывание видео запрещено до конца страйка (до ${untilStr})`);
+          items.push("Комментарии заблокированы на 3 дня (читать комментарии можно)");
+          items.push("ЛС заблокированы на 1 день (отправка и чтение сообщений отправителя ограничены)");
+        } else if (s.type === "ban_notice") {
+          items.push(`Публикация контента запрещена до конца срока (до ${untilStr})`);
+          items.push("Комментарии заблокированы на 7 дней");
+          items.push("ЛС заблокированы на 14 дней");
+        }
+
+        sanctionRestrictionsList.innerHTML = items.map((txt) => `<li>${txt}</li>`).join("");
+      } else {
+        sanctionBanner.classList.remove("visible", "danger");
+        sanctionTitle.textContent = "";
+        sanctionReasonText.textContent = "";
+        sanctionRestrictionsList.innerHTML = "";
+      }
+    }
+
     function renderProfileUI({ firstName, lastName, photo, hasPassword, role }) {
       const nick = firstName || "Пользователь";
       nicknameText.textContent = nick;
@@ -391,7 +513,6 @@
       }
     }
 
-    // Мгновенный показ из кэша ещё до ответа Firebase
     try {
       const cached = JSON.parse(sessionStorage.getItem("sovva_profile_cache") || "null");
       if (cached) renderProfileUI(cached);
@@ -450,7 +571,7 @@
       }
     });
 
-    function detectDeviceLabel() {
+        function detectDeviceLabel() {
       const ua = navigator.userAgent || "";
       const savedPart = localStorage.getItem("sovva_device_part") || "";
       const partMatch = savedPart.trim().toUpperCase() ||
@@ -499,10 +620,8 @@
         activeSessionId: sessionId
       });
 
-      // Сеанс текущего устройства зафиксирован — теперь можно слушать чужие входы
       sessionReady = true;
 
-      // IP и регион подтягиваем асинхронно, не блокируя интерфейс
       fetchNetworkInfo().then((net) => {
         update(ref(db, `sessions/${uid}/${sessionId}`), {
           ip: net.ip,
@@ -572,9 +691,10 @@
       sessionReady = false;
       if (unsubActiveSession) unsubActiveSession();
       if (unsubSessions) unsubSessions();
+      if (unsubProfile) unsubProfile();
 
       if (!user) {
-                sessionStorage.removeItem("sovva_profile_cache");
+        sessionStorage.removeItem("sovva_profile_cache");
         window.location.replace("./index.html");
         return;
       }
@@ -582,7 +702,6 @@
 
       const expectedRole = resolveRoleByEmail(user.email);
 
-      // Сразу рисуем данные из Auth без ожидания RTDB
       renderProfileUI({
         firstName: user.displayName || "Пользователь",
         lastName: "",
@@ -607,17 +726,28 @@
         profile.role = expectedRole;
       }
 
-      const uiData = {
-        firstName: profile.firstName || user.displayName || "Пользователь",
-        lastName: profile.lastName || "",
-        photo: profile.photo || user.photoURL || "",
-        hasPassword: Boolean(profile.hasPassword),
-        role: profile.role || expectedRole
+      const syncProfileView = (p) => {
+        const uiData = {
+          firstName: p.firstName || user.displayName || "Пользователь",
+          lastName: p.lastName || "",
+          photo: p.photo || user.photoURL || "",
+          hasPassword: Boolean(p.hasPassword),
+          role: p.role || expectedRole
+        };
+        sessionStorage.setItem("sovva_profile_cache", JSON.stringify(uiData));
+        renderProfileUI(uiData);
+        renderSanctionBanner(p);
       };
-      sessionStorage.setItem("sovva_profile_cache", JSON.stringify(uiData));
-      renderProfileUI(uiData);
 
-      // Сначала регистрируем сеанс текущего устройства, потом вешаем слушатели
+      syncProfileView(profile);
+
+      // Живое отслеживание страйка, блокировки и разблокировки после апелляции
+      unsubProfile = onValue(ref(db, "users/" + user.uid), (liveSnap) => {
+        if (liveSnap.exists()) {
+          syncProfileView(liveSnap.val());
+        }
+      });
+
       await registerCurrentSession(user.uid).catch(() => { sessionReady = true; });
 
       unsubSessions = onValue(ref(db, `sessions/${user.uid}`), async (sSnap) => {
