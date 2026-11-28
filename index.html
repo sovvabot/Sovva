@@ -159,8 +159,6 @@
       <button id="logoutBtn" class="logout-btn" type="button">Выйти</button>
     </div>
 
-    <p id="dbCounter" class="status-text">Участников в базе: ...</p>
-    <p id="onlineCounter" class="status-text">Онлайн: ...</p>
     <p id="statusText" class="status-text"></p>
   </main>
 
@@ -203,7 +201,6 @@
       get,
       set,
       remove,
-      onValue,
       onDisconnect,
       runTransaction,
       serverTimestamp
@@ -223,6 +220,7 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -230,11 +228,9 @@
     const userPhoto = document.getElementById("userPhoto");
     const userName = document.getElementById("userName");
     const userEmail = document.getElementById("userEmail");
-    const dbCounter = document.getElementById("dbCounter");
-    const onlineCounter = document.getElementById("onlineCounter");
     const statusText = document.getElementById("statusText");
 
-    let isRedirectingToAuth = false;
+    let isRedirecting = false;
 
     function getWaitTimeText() {
       const mins = Math.floor(Math.random() * (120 - 15 + 1)) + 15;
@@ -251,38 +247,6 @@
         const next = val + delta;
         return next < 0 ? 0 : next;
       });
-    }
-
-    onValue(ref(db, "meta/usersCount"), (snap) => {
-      const val = snap.val();
-      dbCounter.textContent = "Участников в базе: " + (typeof val === "number" ? val : 0);
-    }, (err) => {
-      dbCounter.textContent = "Счётчик базы: " + err.code;
-    });
-
-    onValue(ref(db, "meta/onlineCount"), (snap) => {
-      const val = snap.val();
-      onlineCounter.textContent = "Онлайн: " + (typeof val === "number" ? val : 0);
-    }, (err) => {
-      onlineCounter.textContent = "Счётчик онлайн: " + err.code;
-    });
-
-    // Пишем в users ТОЛЬКО если пользователь уже завершил регистрацию на auth.html
-    async function touchRegisteredUser(user) {
-      const userRef = ref(db, "users/" + user.uid);
-      const snap = await get(userRef);
-      if (!snap.exists()) return null;
-
-      const data = snap.val();
-      if (!data.registrationCompleted) return data;
-
-      await update(userRef, {
-        email: user.email || data.email || "",
-        photo: user.photoURL || data.photo || "",
-        lastLogin: serverTimestamp()
-      });
-
-      return data;
     }
 
     async function enterOnline(user) {
@@ -311,11 +275,52 @@
       }
     }
 
+    async function checkRegistrationAndRoute(user) {
+      if (isRedirecting) return;
+
+      const userRef = ref(db, "users/" + user.uid);
+      const snap = await get(userRef);
+      const profile = snap.exists() ? snap.val() : null;
+
+      const isRegistered = Boolean(
+        profile &&
+        profile.registrationCompleted === true &&
+        typeof profile.firstName === "string" &&
+        profile.firstName.trim().length > 0 &&
+        typeof profile.birthDate === "string" &&
+        profile.birthDate.trim().length > 0
+      );
+
+      if (!isRegistered) {
+        isRedirecting = true;
+        window.location.replace("./auth.html");
+        return;
+      }
+
+      // Показываем профиль только если регистрация реально завершена
+      loginBtn.style.display = "none";
+      userBox.style.display = "flex";
+      const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
+      userName.textContent = fullName || user.displayName || "Пользователь";
+      userEmail.textContent = user.email || "";
+      userPhoto.src = user.photoURL || "";
+      userPhoto.style.display = user.photoURL ? "block" : "none";
+
+      await update(userRef, {
+        email: user.email || profile.email || "",
+        photo: user.photoURL || profile.photo || "",
+        lastLogin: serverTimestamp()
+      });
+
+      await enterOnline(user);
+      statusText.textContent = "";
+    }
+
     loginBtn.addEventListener("click", async () => {
       statusText.textContent = "Открываем окно Google...";
       try {
-        await signInWithPopup(auth, provider);
-        statusText.textContent = "";
+        const result = await signInWithPopup(auth, provider);
+        await checkRegistrationAndRoute(result.user);
       } catch (err) {
         statusText.textContent = "Ошибка входа: " + err.code;
       }
@@ -335,26 +340,8 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        loginBtn.style.display = "none";
-        userBox.style.display = "flex";
-        userName.textContent = user.displayName || "Пользователь";
-        userEmail.textContent = user.email || "";
-        userPhoto.src = user.photoURL || "";
-        userPhoto.style.display = user.photoURL ? "block" : "none";
-
         try {
-          const profile = await touchRegisteredUser(user);
-          await enterOnline(user);
-          statusText.textContent = "";
-
-          const isRegistered = Boolean(
-            profile && profile.registrationCompleted && profile.firstName && profile.birthDate
-          );
-
-          if (!isRegistered && !isRedirectingToAuth) {
-            isRedirectingToAuth = true;
-            window.location.href = "./auth.html";
-          }
+          await checkRegistrationAndRoute(user);
         } catch (err) {
           if (err.code === "PERMISSION_DENIED") {
             statusText.textContent =
