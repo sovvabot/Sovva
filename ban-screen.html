@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Sovva — Аккаунт заблокирован навсегда</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --hero-bg: #f6f8fa;
+      --reason-bg: #f6f8fa;
+      --danger: #cf222e;
+      --danger-bg: rgba(207, 34, 46, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --hero-bg: #0d1117;
+        --reason-bg: #0d1117;
+        --danger: #f85149;
+        --danger-bg: rgba(248, 81, 73, 0.12);
+      }
+    }
+    * { box-sizing: border-box; }
+    body, button {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ban-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card);
+      border: 1px solid var(--danger);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    }
+    .ban-hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--hero-bg);
+      border: 1px solid var(--border);
+    }
+    .ban-hero img {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+    .ban-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--danger);
+      line-height: 1.3;
+    }
+    .ban-muted {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .ban-reason {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--reason-bg);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .ban-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .btn-appeal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--danger);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="ban-card" role="dialog" aria-modal="true">
+    <!-- Иллюстрация сверху окна -->
+    <div id="banHeroBox" class="ban-hero">
+      <svg viewBox="0 0 120 120" width="88" height="88" aria-hidden="true">
+        <path d="M12 14 L106 11 L110 108 L15 110 Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round" />
+        <circle cx="56" cy="48" r="14" fill="none" stroke="currentColor" stroke-width="5" />
+        <path d="M26 88 C32 67, 78 67, 86 88 Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round" />
+        <circle cx="84" cy="31" r="13" fill="none" stroke="#f85149" stroke-width="5" />
+        <line x1="75" y1="22" x2="93" y2="40" stroke="#f85149" stroke-width="5" stroke-linecap="round" />
+      </svg>
+    </div>
+
+    <!-- Текст и подача апелляции снизу -->
+    <h1 class="ban-title">Ваш аккаунт заблокирован навсегда</h1>
+    <p class="ban-muted">
+      Доступ ко всем функциям аккаунта закрыт: вы не можете просматривать публикации и видео, выкладывать контент, ставить лайки, комментировать и писать сообщения.
+    </p>
+    <div id="banReasonBox" class="ban-reason">
+      <strong>Причина блокировки:</strong><br />
+      <span id="banReasonText">Загрузка причины...</span>
+    </div>
+    <p class="ban-muted">
+      Вы можете подать апелляцию. Если администратор или владелец её одобрит, доступ к аккаунту снова откроется.
+    </p>
+
+    <div class="ban-actions">
+      <a href="./appeal.html" class="btn-appeal">Подать апелляцию</a>
+      <button id="logoutBtn" type="button" class="btn-logout">Выйти из аккаунта</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
+      authDomain: "sovva-e2c64.firebaseapp.com",
+      databaseURL: "https://sovva-e2c64-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-e2c64",
+      storageBucket: "sovva-e2c64.firebasestorage.app",
+      messagingSenderId: "71366651741",
+      appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
+    };
+
+    // Если загрузишь свою картинку (например "./ban-account.png"), укажи путь сюда
+    const CUSTOM_IMAGE_URL = "";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const banHeroBox = document.getElementById("banHeroBox");
+    const banReasonText = document.getElementById("banReasonText");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (CUSTOM_IMAGE_URL) {
+      const img = document.createElement("img");
+      img.src = CUSTOM_IMAGE_URL;
+      img.alt = "Аккаунт заблокирован";
+      banHeroBox.innerHTML = "";
+      banHeroBox.appendChild(img);
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.replace("./index.html");
+        return;
+      }
+
+      onValue(ref(db, `users/${user.uid}`), (snap) => {
+        const profile = snap.exists() ? snap.val() : null;
+        const isPermanentBan = Boolean(profile?.isBanned || profile?.sanction?.type === "account_ban");
+
+        if (!isPermanentBan) {
+          window.location.replace("./sovva.html");
+          return;
+        }
+
+        banReasonText.textContent = profile?.sanction?.reason || "Нарушение правил платформы Sovva";
+      });
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      sessionStorage.removeItem("sovva_profile_cache");
+      await signOut(auth);
+      window.location.replace("./index.html");
+    });
+  </script>
+</body>
+          </html>
+          
