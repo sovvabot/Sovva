@@ -173,14 +173,13 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
       getDatabase,
       ref,
       get,
       update,
       remove,
-      runTransaction,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
@@ -302,33 +301,8 @@
       window.location.replace("./index.html");
     });
 
-    deleteAccountBtn.addEventListener("click", async () => {
-      if (!currentUser) return;
-      const uid = currentUser.uid;
-      try {
-        const userSnap = await get(ref(db, "users/" + uid));
-        const existed = userSnap.exists();
-
-        await remove(ref(db, "users/" + uid));
-        await remove(ref(db, "online/" + uid)).catch(() => {});
-
-        if (existed) {
-          await runTransaction(ref(db, "meta/usersCount"), (cur) => {
-            const val = typeof cur === "number" ? cur : 0;
-            return val > 0 ? val - 1 : 0;
-          });
-        }
-
-        try {
-          await deleteUser(currentUser);
-        } catch (_) {
-          await signOut(auth);
-        }
-
-        window.location.replace("./index.html");
-      } catch (err) {
-        statusErr.textContent = "Ошибка удаления: " + (err.code || err.message);
-      }
+    deleteAccountBtn.addEventListener("click", () => {
+      window.location.href = "./deleteaccount.html";
     });
   </script>
 </body>
