@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sovva — Имя</title>
+  <style>
+    :root { --bg:#0d1117; --card:#161b22; --text:#f0f6fc; --muted:#8b949e; --border:#30363d; --accent:#2f81f7; --danger:#f85149; }
+    * { box-sizing:border-box; font-family:system-ui,-apple-system,sans-serif; }
+    body { margin:0; min-height:100vh; padding:20px; background:var(--bg); color:var(--text); display:flex; justify-content:center; align-items:flex-start; }
+    .card { width:100%; max-width:440px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:14px; }
+    h1 { margin:0; font-size:20px; }
+    p { margin:0; font-size:13px; color:var(--muted); line-height:1.45; }
+    label { font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px; }
+    input { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; }
+    .field { display:flex; flex-direction:column; gap:4px; }
+    .err { color:var(--danger); font-size:13px; min-height:18px; }
+    button { width:100%; padding:11px 14px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Как вас зовут?</h1>
+    <p>Укажите имя и при необходимости фамилию.</p>
+    <div class="field">
+      <label for="firstNameInput">Имя</label>
+      <input id="firstNameInput" type="text" autocomplete="given-name" />
+    </div>
+    <div class="field">
+      <label for="lastNameInput">Фамилия (необязательно)</label>
+      <input id="lastNameInput" type="text" autocomplete="family-name" />
+    </div>
+    <div id="errMsg" class="err"></div>
+    <button id="nextBtn" type="button">Далее</button>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
+      authDomain: "sovva-e2c64.firebaseapp.com",
+      databaseURL: "https://sovva-e2c64-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-e2c64",
+      storageBucket: "sovva-e2c64.firebasestorage.app",
+      messagingSenderId: "71366651741",
+      appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const DRAFT_KEY = "sovva_reg_draft";
+    const firstNameInput = document.getElementById("firstNameInput");
+    const lastNameInput = document.getElementById("lastNameInput");
+    const errMsg = document.getElementById("errMsg");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function loadDraft() {
+      try {
+        return JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveDraft(patch) {
+      const next = { ...loadDraft(), ...patch };
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next));
+    }
+
+    const draft = loadDraft();
+    if (draft.firstName) firstNameInput.value = draft.firstName;
+    if (draft.lastName) lastNameInput.value = draft.lastName;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.replace("./index.html");
+        return;
+      }
+      if (!firstNameInput.value && user.displayName) {
+        const parts = user.displayName.trim().split(/\s+/);
+        firstNameInput.value = parts[0] || "";
+        if (!lastNameInput.value && parts.length > 1) {
+          lastNameInput.value = parts.slice(1).join(" ");
+        }
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      if (!firstName) {
+        errMsg.textContent = "Пожалуйста, введите имя.";
+        firstNameInput.focus();
+        return;
+      }
+      errMsg.textContent = "";
+      saveDraft({ firstName, lastName });
+      window.location.href = "./otherandgender.html";
+    });
+  </script>
+</body>
+</html>
