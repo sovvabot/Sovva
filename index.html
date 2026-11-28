@@ -90,6 +90,12 @@
       cursor: not-allowed;
     }
 
+    .status {
+      color: #0969da;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
     .err {
       color: #dc2626;
       font-size: 13px;
@@ -135,6 +141,7 @@
     <div class="brand">Sovva</div>
     <h1>Welcome</h1>
     <p>Sign in with your Google account to continue or create your profile.</p>
+    <div id="statusMsg" class="status"></div>
     <div id="errMsg" class="err"></div>
     <button id="googleLoginBtn" type="button" class="btn-google">
       <span>Continue with Google</span>
@@ -177,27 +184,35 @@
     const provider = new GoogleAuthProvider();
 
     const googleLoginBtn = document.getElementById("googleLoginBtn");
+    const statusMsg = document.getElementById("statusMsg");
     const errMsg = document.getElementById("errMsg");
     let routingStarted = false;
+
+    function goTo(url) {
+      window.location.assign(url);
+    }
 
     async function routeAfterAuth(user) {
       if (!user || routingStarted) return;
       routingStarted = true;
       googleLoginBtn.disabled = true;
+      statusMsg.textContent = "Checking account...";
+      errMsg.textContent = "";
 
       try {
         const snap = await get(ref(db, `users/${user.uid}`));
         const profile = snap.exists() ? snap.val() : null;
 
         if (profile && profile.registrationCompleted === true) {
-          window.location.replace("./sovva.html");
+          statusMsg.textContent = "Opening Sovva...";
+          goTo("./sovva.html");
         } else {
-          window.location.replace("./name.html");
+          statusMsg.textContent = "Opening name step...";
+          goTo("./name.html");
         }
       } catch (e) {
-        routingStarted = false;
-        googleLoginBtn.disabled = false;
-        errMsg.textContent = e?.message || "Failed to check profile.";
+        statusMsg.textContent = "Opening name step...";
+        goTo("./name.html");
       }
     }
 
@@ -219,10 +234,12 @@
 
     googleLoginBtn.addEventListener("click", async () => {
       errMsg.textContent = "";
+      statusMsg.textContent = "Redirecting to Google...";
       googleLoginBtn.disabled = true;
       try {
         await signInWithRedirect(auth, provider);
       } catch (err) {
+        statusMsg.textContent = "";
         googleLoginBtn.disabled = false;
         errMsg.textContent = err?.message || "Could not start Google sign-in.";
       }
