@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Sovva — Удаление аккаунта</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --btn-bg: #111827;
+      --btn-text: #ffffff;
+      --danger: #cf222e;
+      --danger-bg: #cf222e;
+      --danger-text: #ffffff;
+      --warn-bg: rgba(207, 34, 46, 0.08);
+      --overlay: rgba(0, 0, 0, 0.6);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --btn-bg: #f0f6fc;
+        --btn-text: #0d1117;
+        --danger: #f85149;
+        --danger-bg: #f85149;
+        --danger-text: #0d1117;
+        --warn-bg: rgba(248, 81, 73, 0.12);
+        --overlay: rgba(0, 0, 0, 0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      color: var(--danger);
+      line-height: 1.3;
+    }
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .alert-box {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--danger);
+      background: var(--warn-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .checks {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 4px;
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .check-item input {
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-bg);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+    }
+    .err-msg {
+      color: var(--danger);
+      font-size: 13px;
+      min-height: 18px;
+    }
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 50;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+    .modal {
+      width: 100%;
+      max-width: 430px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Пока вы не ушли, прочтите, это очень важно</h1>
+
+    <div class="alert-box">
+      <p>
+        Вы собираетесь удалить аккаунт в <strong>Sovva</strong>, что удалит не только сам аккаунт,
+        но и все данные, которые были в этом приложении:
+      </p>
+      <p class="muted">
+        Видео, посты, сообщения, комментарии, лайки, подписчики, подписки и т. д.
+      </p>
+    </div>
+
+    <p>
+      Их нельзя безвозвратно восстановить после удаления, но перед удалением вы можете скачать свои данные.
+    </p>
+
+    <p class="muted">
+      Если всё же соглашаетесь на удаление, подтвердите галочки и удалите аккаунт.
+    </p>
+
+    <div class="checks">
+      <label class="check-item">
+        <input id="chkDownloaded" type="checkbox" />
+        <span>Я скачал все данные перед удалением аккаунта</span>
+      </label>
+      <label class="check-item">
+        <input id="chkConfirmDelete" type="checkbox" />
+        <span>Да, я точно хочу удалить этот аккаунт</span>
+      </label>
+    </div>
+
+    <div id="errMsg" class="err-msg"></div>
+
+    <div class="actions">
+      <button id="deleteStartBtn" class="btn btn-danger" type="button">Удалить аккаунт</button>
+      <button id="downloadDataBtn" class="btn btn-secondary" type="button">Загрузить данные</button>
+      <button id="cancelBtn" class="btn btn-secondary" type="button">Отмена</button>
+    </div>
+  </div>
+
+  <!-- Окно 1: Подтверждение владения аккаунтом -->
+  <div id="ownerVerifyModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>Подтвердите, что этим аккаунтом управляете вы и хотите удалить аккаунт</h2>
+      <p id="targetAccountInfo" class="muted"></p>
+      <div class="modal-actions">
+        <button id="confirmOwnerBtn" class="btn btn-danger" type="button">Подтвердить</button>
+        <button id="closeOwnerModalBtn" class="btn btn-secondary" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно 2: Выбран другой аккаунт Google -->
+  <div id="wrongAccountModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 style="color: var(--danger);">Этот аккаунт не тот, который вы хотите удалить</h2>
+      <p id="wrongAccountDesc"></p>
+      <p class="muted">Удалить этот аккаунт?</p>
+      <div class="modal-actions">
+        <button id="deleteSelectedInsteadBtn" class="btn btn-danger" type="button">Удалить этот аккаунт</button>
+        <button id="changeGoogleAccountBtn" class="btn btn-secondary" type="button">Изменить</button>
+        <button id="cancelWrongAccountBtn" class="btn btn-secondary" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно 3: Финальное подтверждение удаления -->
+  <div id="finalConfirmModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>Точно удалить аккаунт?</h2>
+      <p id="finalAccountDesc" class="muted"></p>
+      <div class="modal-actions">
+        <button id="finalDeleteBtn" class="btn btn-danger" type="button">Удалить аккаунт</button>
+        <button id="finalCancelBtn" class="btn btn-secondary" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut,
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      remove,
+      runTransaction
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
+      authDomain: "sovva-e2c64.firebaseapp.com",
+      databaseURL: "https://sovva-e2c64-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sovva-e2c64",
+      storageBucket: "sovva-e2c64.firebasestorage.app",
+      messagingSenderId: "71366651741",
+      appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    const chkDownloaded = document.getElementById("chkDownloaded");
+    const chkConfirmDelete = document.getElementById("chkConfirmDelete");
+    const errMsg = document.getElementById("errMsg");
+    const deleteStartBtn = document.getElementById("deleteStartBtn");
+    const downloadDataBtn = document.getElementById("downloadDataBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+
+    const ownerVerifyModal = document.getElementById("ownerVerifyModal");
+    const targetAccountInfo = document.getElementById("targetAccountInfo");
+    const confirmOwnerBtn = document.getElementById("confirmOwnerBtn");
+    const closeOwnerModalBtn = document.getElementById("closeOwnerModalBtn");
+
+    const wrongAccountModal = document.getElementById("wrongAccountModal");
+    const wrongAccountDesc = document.getElementById("wrongAccountDesc");
+    const deleteSelectedInsteadBtn = document.getElementById("deleteSelectedInsteadBtn");
+    const changeGoogleAccountBtn = document.getElementById("changeGoogleAccountBtn");
+    const cancelWrongAccountBtn = document.getElementById("cancelWrongAccountBtn");
+
+    const finalConfirmModal = document.getElementById("finalConfirmModal");
+    const finalAccountDesc = document.getElementById("finalAccountDesc");
+    const finalDeleteBtn = document.getElementById("finalDeleteBtn");
+    const finalCancelBtn = document.getElementById("finalCancelBtn");
+
+    let initialUser = null;
+    let userToDelete = null;
+    let pickedUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!initialUser && user) {
+        initialUser = user;
+        userToDelete = user;
+      }
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      window.location.replace("./sovva.html");
+    });
+
+    downloadDataBtn.addEventListener("click", async () => {
+      errMsg.textContent = "";
+      const activeUser = auth.currentUser || initialUser;
+      if (!activeUser) {
+        errMsg.textContent = "Аккаунт не найден.";
+        return;
+      }
+      try {
+        const snap = await get(ref(db, "users/" + activeUser.uid));
+        const exportObj = {
+          uid: activeUser.uid,
+          email: activeUser.email || "",
+          exportedAt: new Date().toISOString(),
+          profile: snap.exists() ? snap.val() : null
+        };
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sovva-data-${activeUser.uid}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        errMsg.textContent = "Ошибка загрузки данных: " + (err.code || err.message);
+      }
+    });
+
+    deleteStartBtn.addEventListener("click", () => {
+      errMsg.textContent = "";
+      if (!chkDownloaded.checked || !chkConfirmDelete.checked) {
+        errMsg.textContent = "Отметьте обе галочки перед удалением аккаунта.";
+        return;
+      }
+      userToDelete = auth.currentUser || initialUser;
+      targetAccountInfo.textContent = userToDelete?.email
+        ? `Текущий аккаунт: ${userToDelete.email}`
+        : "";
+      ownerVerifyModal.classList.add("active");
+    });
+
+    closeOwnerModalBtn.addEventListener("click", () => {
+      ownerVerifyModal.classList.remove("active");
+    });
+
+    async function pickAccountWithGoogle() {
+      ownerVerifyModal.classList.remove("active");
+      wrongAccountModal.classList.remove("active");
+      errMsg.textContent = "";
+
+      try {
+        if (auth.currentUser) {
+          await signOut(auth);
+        }
+        const res = await signInWithPopup(auth, provider);
+        pickedUser = res.user;
+
+        const expectedUid = userToDelete?.uid;
+        const expectedEmail = (userToDelete?.email || "").toLowerCase();
+        const pickedUid = pickedUser?.uid;
+        const pickedEmail = (pickedUser?.email || "").toLowerCase();
+
+        const isSameAccount =
+          Boolean(expectedUid && pickedUid === expectedUid) ||
+          Boolean(expectedEmail && pickedEmail && expectedEmail === pickedEmail);
+
+        if (!isSameAccount && (expectedUid || expectedEmail)) {
+          wrongAccountDesc.textContent =
+            `Выбран аккаунт ${pickedUser.email || pickedUser.uid}, а удалялся аккаунт ${userToDelete.email || userToDelete.uid}.`;
+          wrongAccountModal.classList.add("active");
+          return;
+        }
+
+        userToDelete = pickedUser;
+        finalAccountDesc.textContent = pickedUser.email ? `Аккаунт: ${pickedUser.email}` : "";
+        finalConfirmModal.classList.add("active");
+      } catch (err) {
+        if (err.code !== "auth/popup-closed-by-user") {
+          errMsg.textContent = "Ошибка выбора аккаунта: " + (err.code || err.message);
+        }
+      }
+    }
+
+    confirmOwnerBtn.addEventListener("click", pickAccountWithGoogle);
+    changeGoogleAccountBtn.addEventListener("click", pickAccountWithGoogle);
+
+    cancelWrongAccountBtn.addEventListener("click", () => {
+      wrongAccountModal.classList.remove("active");
+    });
+
+    deleteSelectedInsteadBtn.addEventListener("click", () => {
+      wrongAccountModal.classList.remove("active");
+      if (!pickedUser) return;
+      userToDelete = pickedUser;
+      finalAccountDesc.textContent = pickedUser.email ? `Аккаунт: ${pickedUser.email}` : "";
+      finalConfirmModal.classList.add("active");
+    });
+
+    finalCancelBtn.addEventListener("click", () => {
+      finalConfirmModal.classList.remove("active");
+    });
+
+    finalDeleteBtn.addEventListener("click", async () => {
+      const target = auth.currentUser || userToDelete;
+      if (!target) {
+        errMsg.textContent = "Не удалось определить аккаунт для удаления.";
+        return;
+      }
+
+      const uid = target.uid;
+      try {
+        const userSnap = await get(ref(db, "users/" + uid));
+        const existed = userSnap.exists();
+
+        const pathsToClear = [
+          "users/" + uid,
+          "online/" + uid,
+          "posts/" + uid,
+          "videos/" + uid,
+          "messages/" + uid,
+          "comments/" + uid,
+          "likes/" + uid,
+          "followers/" + uid,
+          "following/" + uid
+        ];
+
+        for (const p of pathsToClear) {
+          await remove(ref(db, p)).catch(() => {});
+        }
+
+        if (existed) {
+          await runTransaction(ref(db, "meta/usersCount"), (cur) => {
+            const val = typeof cur === "number" ? cur : 0;
+            return val > 0 ? val - 1 : 0;
+          });
+        }
+
+        try {
+          await deleteUser(target);
+        } catch (_) {
+          await signOut(auth);
+        }
+
+        window.location.replace("./index.html");
+      } catch (err) {
+        finalConfirmModal.classList.remove("active");
+        errMsg.textContent = "Ошибка удаления в облаке: " + (err.code || err.message);
+      }
+    });
+  </script>
+</body>
+  </html>
+  
