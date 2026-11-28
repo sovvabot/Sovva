@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="auto">
+<html lang="en" data-theme="auto">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -249,21 +249,6 @@
       color: var(--danger);
     }
 
-    .rules-list {
-      margin: 0;
-      padding-left: 18px;
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .rule-ok {
-      color: var(--ok);
-      font-weight: 500;
-    }
-
     .actions {
       display: flex;
       flex-direction: column;
@@ -299,11 +284,6 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-    }
-
-    .btn-secondary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
     }
 
     .error-msg {
@@ -497,12 +477,6 @@
             <div id="strengthText" class="strength-label">Слабый</div>
           </div>
           <input id="passwordInput" class="input" type="password" autocomplete="new-password" />
-          <ul class="rules-list">
-            <li id="ruleLatin">Только латинские буквы</li>
-            <li id="ruleUpper">Минимум одна заглавная буква (A–Z)</li>
-            <li id="ruleDigitOrUnderscore">Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)</li>
-            <li id="ruleSymbol">Хотя бы один специальный символ (например, ! @ # $ % *)</li>
-          </ul>
         </div>
 
         <div class="field">
@@ -515,7 +489,7 @@
             <button id="backFromStep3Btn" class="btn-secondary" type="button">Назад</button>
             <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
           </div>
-          <button id="skipPasswordBtn" class="btn-secondary" type="button" disabled>Пропустить пароль</button>
+          <button id="skipPasswordBtn" class="btn-secondary" type="button">Пропустить пароль</button>
         </div>
       </section>
 
@@ -555,14 +529,13 @@
         step2Title: "Дата рождения и пол",
         step2Subtitle: "Выберите дату рождения и укажите пол",
         step3Title: "Придумайте пароль",
-        step3Subtitle: "Защитите аккаунт или пропустите шаг при оценке «Средний»",
+        step3Subtitle: "Защитите аккаунт или пропустите этот шаг",
         welcomeBackTitle: (nick) => `С возвращением: ${nick}!`,
         welcomeBackSubtitle: "Введите пароль, сохранённый в облаке, для входа в аккаунт",
         loginPasswordLabel: "Пароль",
         verifyPasswordBtn: "Войти",
         switchAccountBtn: "Выйти из аккаунта",
         errWrongPassword: "Неверный пароль.",
-        errSkipOnlyMedium: "Пропустить пароль можно только при пометке «Средний».",
         backBtn: "Назад",
         nextBtn: "Далее",
         firstName: "Имя",
@@ -580,11 +553,7 @@
         passwordConfirm: "Повторите пароль",
         strengthWeak: "Слабый",
         strengthMedium: "Средний",
-        strengthStrong: "Сильный",
-        ruleLatin: "Только латинские буквы",
-        ruleUpper: "Минимум одна заглавная буква (A–Z)",
-        ruleDigitOrUnderscore: "Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)",
-        ruleSymbol: "Хотя бы один специальный символ (например, ! @ # $ % *)",
+        strengthStrong: "Надёжный",
         submit: "Сохранить и продолжить",
         skipPassword: "Пропустить пароль",
         modalTitle: "Внимание! Вы точно хотите пропустить пароль?",
@@ -600,8 +569,8 @@
         themeDark: "Тёмная",
         errFirstName: "Укажите имя.",
         errDob: "Укажите корректную дату рождения.",
+        errPasswordEmpty: "Пароль пустой. Введите пароль или нажмите «Пропустить пароль».",
         errPasswordMismatch: "Пароли не совпадают.",
-        errPasswordRules: "Пароль не соответствует требованиям безопасности или доведите его до оценки «Средний» для пропуска.",
         errSave: "Ошибка сохранения в облако: ",
         months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
         dayPrefix: "День",
@@ -616,14 +585,13 @@
         step2Title: "Date of birth & gender",
         step2Subtitle: "Select your birth date and choose gender",
         step3Title: "Create a password",
-        step3Subtitle: "Secure your account or skip when strength is Medium",
+        step3Subtitle: "Secure your account or skip this step",
         welcomeBackTitle: (nick) => `Welcome back: ${nick}!`,
         welcomeBackSubtitle: "Enter the password saved in the cloud to sign in",
         loginPasswordLabel: "Password",
         verifyPasswordBtn: "Sign in",
         switchAccountBtn: "Sign out",
         errWrongPassword: "Incorrect password.",
-        errSkipOnlyMedium: "You can only skip the password when strength is Medium.",
         backBtn: "Back",
         nextBtn: "Next",
         firstName: "First name",
@@ -642,10 +610,6 @@
         strengthWeak: "Weak",
         strengthMedium: "Medium",
         strengthStrong: "Strong",
-        ruleLatin: "Latin characters only",
-        ruleUpper: "At least one uppercase letter (A–Z)",
-        ruleDigitOrUnderscore: "At least one digit (0–9) or underscore (_)",
-                ruleSymbol: "At least one special symbol (e.g. ! @ # $ % *)",
         submit: "Save and continue",
         skipPassword: "Skip password",
         modalTitle: "Warning! Are you sure you want to skip the password?",
@@ -661,8 +625,8 @@
         themeDark: "Dark",
         errFirstName: "Please enter your first name.",
         errDob: "Please enter a valid date of birth.",
+        errPasswordEmpty: "Password is empty. Enter a password or click 'Skip password'.",
         errPasswordMismatch: "Passwords do not match.",
-        errPasswordRules: "Password does not meet the rules, or reach Medium strength to skip.",
         errSave: "Cloud save error: ",
         months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         dayPrefix: "Day",
@@ -675,16 +639,15 @@
         step1Title: "Wie heißt du?",
         step1Subtitle: "Gib deinen Vornamen und optional Nachnamen ein",
         step2Title: "Geburtsdatum & Geschlecht",
-        step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
+                step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
         step3Title: "Passwort festlegen",
-        step3Subtitle: "Schütze dein Konto oder überspringe bei Stärke Mittel",
+        step3Subtitle: "Schütze dein Konto oder überspringe diesen Schritt",
         welcomeBackTitle: (nick) => `Willkommen zurück: ${nick}!`,
         welcomeBackSubtitle: "Gib dein in der Cloud gespeichertes Passwort ein",
         loginPasswordLabel: "Passwort",
         verifyPasswordBtn: "Anmelden",
         switchAccountBtn: "Abmelden",
         errWrongPassword: "Falsches Passwort.",
-        errSkipOnlyMedium: "Überspringen ist nur bei der Bewertung „Mittel“ möglich.",
         backBtn: "Zurück",
         nextBtn: "Weiter",
         firstName: "Vorname",
@@ -703,10 +666,6 @@
         strengthWeak: "Schwach",
         strengthMedium: "Mittel",
         strengthStrong: "Stark",
-        ruleLatin: "Nur lateinische Buchstaben",
-        ruleUpper: "Mindestens ein Großbuchstabe (A–Z)",
-        ruleDigitOrUnderscore: "Mindestens eine Ziffer (0–9) oder ein Unterstrich (_)",
-        ruleSymbol: "Mindestens ein Sonderzeichen (z. B. ! @ # $ % *)",
         submit: "Speichern und fortfahren",
         skipPassword: "Passwort überspringen",
         modalTitle: "Achtung! Passwort wirklich überspringen?",
@@ -722,8 +681,8 @@
         themeDark: "Dunkel",
         errFirstName: "Bitte gib deinen Vornamen ein.",
         errDob: "Bitte gib ein gültiges Geburtsdatum ein.",
+        errPasswordEmpty: "Das Passwort ist leer. Gib ein Passwort ein oder klicke auf „Passwort überspringen“.",
         errPasswordMismatch: "Die Passwörter stimmen nicht überein.",
-        errPasswordRules: "Das Passwort erfüllt nicht alle Regeln oder erreiche „Mittel“ zum Überspringen.",
         errSave: "Cloud-Speicherfehler: ",
         months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
         dayPrefix: "Tag",
@@ -880,10 +839,6 @@
 
       document.getElementById("passwordLabel").textContent = t.password;
       document.getElementById("passwordConfirmLabel").textContent = t.passwordConfirm;
-      document.getElementById("ruleLatin").textContent = t.ruleLatin;
-      document.getElementById("ruleUpper").textContent = t.ruleUpper;
-      document.getElementById("ruleDigitOrUnderscore").textContent = t.ruleDigitOrUnderscore;
-      document.getElementById("ruleSymbol").textContent = t.ruleSymbol;
       document.getElementById("backFromStep3Btn").textContent = t.backBtn;
       document.getElementById("submitBtn").textContent = t.submit;
       skipPasswordBtn.textContent = t.skipPassword;
@@ -960,45 +915,30 @@
     }
 
     function evaluatePassword(pw) {
-      const onlyLatin = pw.length > 0 && /^[A-Za-z0-9_!@#$%^&*()\-+=.?~[\]{}|;:'",/<>\\]+$/.test(pw);
-      const hasUpper = /[A-Z]/.test(pw);
-      const hasDigitOrUnderscore = /[0-9_]/.test(pw);
-      const hasSymbol = /[^A-Za-z0-9_]/.test(pw);
+      if (!pw) return "weak";
+      let score = 0;
+      if (pw.length >= 4) score++;
+      if (pw.length >= 6) score++;
+      if (/[A-Z]/.test(pw) || /[0-9_]/.test(pw)) score++;
+      if (pw.length >= 8 && (/[^A-Za-z0-9]/.test(pw) || (/[A-Z]/.test(pw) && /[0-9]/.test(pw)))) score++;
 
-      const allValid = onlyLatin && hasUpper && hasDigitOrUnderscore && hasSymbol && pw.length >= 6;
-      const mediumValid = onlyLatin && pw.length >= 4 && (hasUpper || hasDigitOrUnderscore || hasSymbol) && !allValid;
-
-      let level = "weak";
-      if (allValid) level = "strong";
-      else if (mediumValid) level = "medium";
-
-      return { onlyLatin, hasUpper, hasDigitOrUnderscore, hasSymbol, allValid, mediumValid, level };
+      if (score >= 4) return "strong";
+      if (score >= 2) return "medium";
+      return "weak";
     }
 
     function updatePasswordStrength() {
       const lang = langSelect.value || "ru";
       const t = i18n[lang] || i18n.ru;
       const pw = passwordInput.value;
-      const res = evaluatePassword(pw);
+      const level = evaluatePassword(pw);
 
-      const rLatin = document.getElementById("ruleLatin");
-      const rUpper = document.getElementById("ruleUpper");
-      const rDigit = document.getElementById("ruleDigitOrUnderscore");
-      const rSym = document.getElementById("ruleSymbol");
-
-      rLatin.className = res.onlyLatin ? "rule-ok" : "";
-      rUpper.className = res.hasUpper ? "rule-ok" : "";
-      rDigit.className = res.hasDigitOrUnderscore ? "rule-ok" : "";
-      rSym.className = res.hasSymbol ? "rule-ok" : "";
-
-      skipPasswordBtn.disabled = res.level !== "medium";
-
-      if (res.level === "strong") {
+      if (level === "strong") {
         strengthFill.style.width = "100%";
         strengthFill.style.backgroundColor = "var(--ok)";
         strengthText.style.color = "var(--ok)";
         strengthText.textContent = t.strengthStrong;
-      } else if (res.level === "medium") {
+      } else if (level === "medium") {
         strengthFill.style.width = "55%";
         strengthFill.style.backgroundColor = "var(--warn)";
         strengthText.style.color = "var(--warn)";
@@ -1113,7 +1053,7 @@
         const profile = snap.exists() ? snap.val() : null;
         cloudProfile = profile;
 
-                if (modeParam === "login" && profile && profile.registrationCompleted === true && profile.hasPassword === true && profile.passwordHash) {
+        if (modeParam === "login" && profile && profile.registrationCompleted === true && profile.hasPassword === true && profile.passwordHash) {
           const nick = profile.firstName || user.displayName || "Пользователь";
           window.setReturningPasswordMode(nick);
           return;
@@ -1188,18 +1128,10 @@
       }
 
       let passwordHash = null;
-      if (skipPassword) {
-        const evalPw = evaluatePassword(pw);
-        if (evalPw.level !== "medium") {
-          goToStep(3);
-          formError.textContent = t.errSkipOnlyMedium;
-          return;
-        }
-      } else {
+      if (!skipPassword) {
         goToStep(3);
-        const evalPw = evaluatePassword(pw);
-        if (!evalPw.allValid) {
-          formError.textContent = t.errPasswordRules;
+        if (!pw) {
+          formError.textContent = t.errPasswordEmpty;
           passwordInput.focus();
           return;
         }
@@ -1214,7 +1146,7 @@
       skipModal.classList.remove("active");
       savingOverlay.classList.add("active");
 
-      try {
+            try {
         const uid = currentUser ? currentUser.uid : "guest_" + Date.now();
         const userRef = ref(db, "users/" + uid);
         const snap = await get(userRef);
@@ -1258,13 +1190,6 @@
     });
 
     skipBtn.addEventListener("click", () => {
-      const lang = document.getElementById("langSelect").value || "ru";
-      const t = i18n[lang] || i18n.ru;
-      const evalPw = evaluatePassword(passwordInput.value);
-      if (evalPw.level !== "medium") {
-        formError.textContent = t.errSkipOnlyMedium;
-        return;
-      }
       skipModal.classList.add("active");
     });
 
