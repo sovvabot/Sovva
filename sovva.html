@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -196,7 +196,7 @@
       <img id="avatarImg" class="avatar" src="" alt="" style="display:none;" />
       <div id="avatarFallback" class="avatar">S</div>
       <div>
-        <h1 id="nicknameText" class="nickname">Загрузка...</h1>
+        <h1 id="nicknameText" class="nickname">Профиль</h1>
         <div id="lastNameText" class="lastname"></div>
       </div>
     </div>
@@ -320,6 +320,30 @@
       ("sess_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
     sessionStorage.setItem("sovva_session_id", sessionId);
 
+    function renderProfileUI({ firstName, lastName, photo, hasPassword }) {
+      const nick = firstName || "Пользователь";
+      nicknameText.textContent = nick;
+      lastNameText.textContent = lastName || "";
+      userHasPassword = Boolean(hasPassword);
+      passwordSectionTitle.textContent = userHasPassword ? "Изменить пароль" : "Установить пароль";
+
+      if (photo) {
+        avatarImg.src = photo;
+        avatarImg.style.display = "block";
+        avatarFallback.style.display = "none";
+      } else {
+        avatarImg.style.display = "none";
+        avatarFallback.style.display = "flex";
+        avatarFallback.textContent = nick.charAt(0).toUpperCase() || "S";
+      }
+    }
+
+    // Мгновенный показ из кэша ещё до ответа Firebase
+    try {
+      const cached = JSON.parse(sessionStorage.getItem("sovva_profile_cache") || "null");
+      if (cached) renderProfileUI(cached);
+    } catch (_) {}
+
     function resetSheetPosition() {
       sheet.classList.remove("dragging");
       sheet.style.transform = "translateY(0px)";
@@ -391,32 +415,43 @@
     }
 
     async function fetchNetworkInfo() {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 1500);
       try {
-        const res = await fetch("https://ipwho.is/", { cache: "no-store" });
+        const res = await fetch("https://ipwho.is/", { cache: "no-store", signal: controller.signal });
         const data = await res.json();
+        clearTimeout(timer);
         if (data && data.success !== false) {
           return {
             ip: data.ip || "Не определён",
             region: [data.city, data.region, data.country].filter(Boolean).join(", ") || "Не определён"
           };
         }
-      } catch (_) {}
+      } catch (_) {
+        clearTimeout(timer);
+      }
       return { ip: "Не определён", region: "Не определён" };
     }
 
     async function registerCurrentSession(uid) {
-      const net = await fetchNetworkInfo();
       const deviceLabel = detectDeviceLabel();
       await set(ref(db, `sessions/${uid}/${sessionId}`), {
         sessionId,
         device: deviceLabel,
-        ip: net.ip,
-        region: net.region,
+        ip: "Определяется...",
+        region: "Определяется...",
         updatedAt: serverTimestamp()
       });
       await update(ref(db, `users/${uid}`), {
         activeSessionId: sessionId
       });
+
+      const net = await fetchNetworkInfo();
+      await update(ref(db, `sessions/${uid}/${sessionId}`), {
+        ip: net.ip,
+        region: net.region,
+        updatedAt: serverTimestamp()
+      }).catch(() => {});
     }
 
     function openSecuritySheet(remoteSession) {
@@ -480,10 +515,19 @@
       if (unsubSessions) unsubSessions();
 
       if (!user) {
+        sessionStorage.removeItem("sovva_profile_cache");
         window.location.replace("./index.html");
         return;
       }
       currentUser = user;
+
+      // Сразу рисуем данные из Auth без ожидания RTDB
+      renderProfileUI({
+        firstName: user.displayName || "Пользователь",
+        lastName: "",
+        photo: user.photoURL || "",
+        hasPassword: false
+      });
 
       const snap = await get(ref(db, "users/" + user.uid));
       const profile = snap.exists() ? snap.val() : null;
@@ -493,24 +537,17 @@
         return;
       }
 
-      userHasPassword = Boolean(profile.hasPassword);
-      const nick = profile.firstName || user.displayName || "Пользователь";
-      const last = profile.lastName || "";
+      const uiData = {
+        firstName: profile.firstName || user.displayName || "Пользователь",
+        lastName: profile.lastName || "",
+        photo: profile.photo || user.photoURL || "",
+        hasPassword: Boolean(profile.hasPassword)
+      };
+      sessionStorage.setItem("sovva_profile_cache", JSON.stringify(uiData));
+      renderProfileUI(uiData);
 
-      nicknameText.textContent = nick;
-      lastNameText.textContent = last;
-      passwordSectionTitle.textContent = userHasPassword ? "Изменить пароль" : "Установить пароль";
-
-      const photoUrl = profile.photo || user.photoURL || "";
-      if (photoUrl) {
-        avatarImg.src = photoUrl;
-        avatarImg.style.display = "block";
-        avatarFallback.style.display = "none";
-      } else {
-        avatarFallback.textContent = nick.charAt(0).toUpperCase() || "S";
-      }
-
-      await registerCurrentSession(user.uid);
+      // Регистрацию сеанса запускаем в фоне, не блокируя интерфейс
+      registerCurrentSession(user.uid).catch(() => {});
 
       unsubSessions = onValue(ref(db, `sessions/${user.uid}`), async (sSnap) => {
         const latestSessionsMap = sSnap.exists() ? sSnap.val() : {};
@@ -522,7 +559,7 @@
         }
       });
 
-      unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
+            unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
         const activeId = aSnap.exists() ? aSnap.val() : null;
         if (!activeId || activeId === sessionId) return;
 
@@ -565,8 +602,9 @@
       }
     });
 
-    
-          if (currentUser) {
+    logoutBtn.addEventListener("click", async () => {
+      sessionStorage.removeItem("sovva_profile_cache");
+      if (currentUser) {
         await remove(ref(db, `sessions/${currentUser.uid}/${sessionId}`)).catch(() => {});
         await remove(ref(db, "online/" + currentUser.uid)).catch(() => {});
       }
