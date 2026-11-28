@@ -1,49 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sovva — Дата рождения и пол</title>
+  <meta name="color-scheme" content="light" />
+  <title>Sovva — Пароль</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg:#0d1117; --card:#161b22; --text:#f0f6fc; --muted:#8b949e; --border:#30363d; --accent:#2f81f7; --danger:#f85149; }
-    * { box-sizing:border-box; font-family:system-ui,-apple-system,sans-serif; }
-    body { margin:0; min-height:100vh; padding:20px; background:var(--bg); color:var(--text); display:flex; justify-content:center; align-items:flex-start; }
-    .card { width:100%; max-width:440px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:14px; }
-    h1 { margin:0; font-size:20px; }
-    p { margin:0; font-size:13px; color:var(--muted); line-height:1.45; }
-    label { font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px; }
-    select { padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; }
-    .date-row { display:grid; grid-template-columns:1fr 1.4fr 1.1fr; gap:8px; }
-    .gender-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .gender-opt { display:flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); font-size:13px; cursor:pointer; }
-    .err { color:var(--danger); font-size:13px; min-height:18px; }
-    .row-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    button { padding:11px 14px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-primary { border:none; background:var(--accent); color:#fff; }
-    .btn-secondary { border:1px solid var(--border); background:transparent; color:var(--text); }
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    html, body, button, input, select, textarea, h1, h2, h3, p, div, span, a, label {
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      background: #ffffff;
+      color: #111827;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #0969da;
+    }
+
+    .bar-bg {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #dc2626;
+      transition: width .2s ease, background-color .2s ease;
+    }
+
+    .strength {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 4px;
+    }
+
+    .err {
+      color: #dc2626;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    .row-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      border: none;
+      background: #0969da;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #0550ae;
+    }
+
+    .btn-secondary {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+
+    .footer {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #4b5563;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #111827;
+      text-decoration: underline;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #6b7280;
+    }
   </style>
 </head>
 <body>
   <main class="card">
-    <h1>Дата рождения и пол</h1>
-    <p>Выберите дату рождения и укажите пол.</p>
+    <div class="brand">Sovva</div>
+    <h1>Пароль</h1>
+    <p>Придумайте пароль для аккаунта, затем перейдём к проверке.</p>
 
     <div>
-      <label>Дата рождения</label>
-      <div class="date-row">
-        <select id="birthDay"></select>
-        <select id="birthMonth"></select>
-        <select id="birthYear"></select>
-      </div>
+      <label for="passInput">Пароль</label>
+      <input id="passInput" type="password" autocomplete="new-password" />
+      <div class="bar-bg"><div id="barFill" class="bar-fill"></div></div>
+      <div id="strengthText" class="strength">Надёжность: —</div>
     </div>
 
     <div>
-      <label>Пол</label>
-      <div class="gender-grid">
-        <label class="gender-opt"><input type="radio" name="gender" value="male" />Мужской</label>
-        <label class="gender-opt"><input type="radio" name="gender" value="female" />Женский</label>
-        <label class="gender-opt"><input type="radio" name="gender" value="none" checked />Не указан</label>
-      </div>
+      <label for="confirmInput">Повторите пароль</label>
+      <input id="confirmInput" type="password" autocomplete="new-password" />
     </div>
 
     <div id="errMsg" class="err"></div>
@@ -53,9 +208,18 @@
     </div>
   </main>
 
+  <footer class="footer">
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="./support.html">Support</a>
+      <a href="./terms.html">Terms</a>
+      <a href="./privacy.html">Privacy</a>
+    </nav>
+    <div class="copyright">© 2026 Sovva, All rights reserved</div>
+  </footer>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
@@ -71,31 +235,13 @@
     const auth = getAuth(app);
 
     const DRAFT_KEY = "sovva_reg_draft";
-    const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-    const birthDay = document.getElementById("birthDay");
-    const birthMonth = document.getElementById("birthMonth");
-    const birthYear = document.getElementById("birthYear");
+    const passInput = document.getElementById("passInput");
+    const confirmInput = document.getElementById("confirmInput");
+    const barFill = document.getElementById("barFill");
+    const strengthText = document.getElementById("strengthText");
     const errMsg = document.getElementById("errMsg");
     const backBtn = document.getElementById("backBtn");
     const nextBtn = document.getElementById("nextBtn");
-
-    function initSelects() {
-      birthDay.innerHTML = `<option value="">ДД</option>`;
-      for (let d = 1; d <= 31; d++) {
-        const v = String(d).padStart(2, "0");
-        birthDay.innerHTML += `<option value="${v}">${v}</option>`;
-      }
-      birthMonth.innerHTML = `<option value="">Месяц</option>`;
-      months.forEach((name, idx) => {
-        const v = String(idx + 1).padStart(2, "0");
-        birthMonth.innerHTML += `<option value="${v}">${name}</option>`;
-      });
-      const nowY = new Date().getFullYear();
-      birthYear.innerHTML = `<option value="">Год</option>`;
-      for (let y = nowY - 5; y >= 1925; y--) {
-        birthYear.innerHTML += `<option value="${y}">${y}</option>`;
-      }
-    }
 
     function loadDraft() {
       try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "{}"); } catch { return {}; }
@@ -105,50 +251,74 @@
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...loadDraft(), ...patch }));
     }
 
-    initSelects();
+    async function hashPassword(password) {
+      const enc = new TextEncoder().encode(password);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function updateStrength() {
+      const v = passInput.value || "";
+      if (!v) {
+        barFill.style.width = "0%";
+        strengthText.textContent = "Надёжность: —";
+        return;
+      }
+      let score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 10) score++;
+      if (/[A-ZА-ЯЁ]/.test(v) && /[a-zа-яё]/.test(v)) score++;
+      if (/\d/.test(v) || /[^A-Za-zА-Яа-яЁё0-9]/.test(v)) score++;
+
+      if (score <= 1) {
+        barFill.style.width = "30%";
+        barFill.style.backgroundColor = "#dc2626";
+        strengthText.textContent = "Надёжность: Слабый";
+      } else if (score <= 3) {
+        barFill.style.width = "68%";
+        barFill.style.backgroundColor = "#d97706";
+        strengthText.textContent = "Надёжность: Средний";
+      } else {
+        barFill.style.width = "100%";
+        barFill.style.backgroundColor = "#16a34a";
+        strengthText.textContent = "Надёжность: Надёжный";
+      }
+    }
+
     const draft = loadDraft();
-    if (!draft.firstName) {
+    if (!draft.firstName || !draft.birthDate) {
       window.location.replace("./name.html");
     }
-    if (draft.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(draft.birthDate)) {
-      const [y, m, d] = draft.birthDate.split("-");
-      birthYear.value = y;
-      birthMonth.value = m;
-      birthDay.value = d;
-    }
-    if (draft.gender) {
-      const r = document.querySelector(`input[name="gender"][value="${draft.gender}"]`);
-      if (r) r.checked = true;
-    }
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.replace("./index.html");
-    });
+    (async () => {
+      await auth.authStateReady();
+      if (!auth.currentUser) {
+        window.location.replace("./index.html");
+      }
+    })();
 
+    passInput.addEventListener("input", updateStrength);
     backBtn.addEventListener("click", () => {
-      window.location.href = "./name.html";
+      window.location.href = "./otherandgender.html";
     });
 
-    nextBtn.addEventListener("click", () => {
-      const d = birthDay.value;
-      const m = birthMonth.value;
-      const y = birthYear.value;
-      if (!d || !m || !y) {
-        errMsg.textContent = "Выберите корректную дату рождения.";
+    nextBtn.addEventListener("click", async () => {
+      const p1 = passInput.value;
+      const p2 = confirmInput.value;
+      if (!p1 || p1.length < 6) {
+        errMsg.textContent = "Пароль должен содержать минимум 6 символов.";
+        passInput.focus();
         return;
       }
-      const check = new Date(Number(y), Number(m) - 1, Number(d));
-      if (check.getFullYear() !== Number(y) || check.getMonth() !== Number(m) - 1 || check.getDate() !== Number(d)) {
-        errMsg.textContent = "Выберите корректную дату рождения.";
+      if (p1 !== p2) {
+        errMsg.textContent = "Пароли не совпадают.";
+        confirmInput.focus();
         return;
       }
-      const genderEl = document.querySelector('input[name="gender"]:checked');
-      saveDraft({
-        birthDate: `${y}-${m}-${d}`,
-        gender: genderEl ? genderEl.value : "none"
-      });
       errMsg.textContent = "";
-      window.location.href = "./password.html";
+      const passwordHash = await hashPassword(p1);
+      saveDraft({ passwordHash });
+      window.location.href = "./humantesting.html";
     });
   </script>
 </body>
