@@ -3,40 +3,182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sovva — Имя</title>
+  <meta name="color-scheme" content="light" />
+  <title>Sovva — Your name</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg:#0d1117; --card:#161b22; --text:#f0f6fc; --muted:#8b949e; --border:#30363d; --accent:#2f81f7; --danger:#f85149; }
-    * { box-sizing:border-box; font-family:system-ui,-apple-system,sans-serif; }
-    body { margin:0; min-height:100vh; padding:20px; background:var(--bg); color:var(--text); display:flex; justify-content:center; align-items:flex-start; }
-    .card { width:100%; max-width:440px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:14px; }
-    h1 { margin:0; font-size:20px; }
-    p { margin:0; font-size:13px; color:var(--muted); line-height:1.45; }
-    label { font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px; }
-    input { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; }
-    .field { display:flex; flex-direction:column; gap:4px; }
-    .err { color:var(--danger); font-size:13px; min-height:18px; }
-    button { width:100%; padding:11px 14px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    html, body, button, input, select, textarea, h1, h2, h3, p, div, span, a, label {
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      background: #ffffff;
+      color: #111827;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #0969da;
+    }
+
+    .err {
+      color: #dc2626;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #0969da;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0550ae;
+    }
+
+    .footer {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #4b5563;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #111827;
+      text-decoration: underline;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #6b7280;
+    }
   </style>
 </head>
 <body>
   <main class="card">
-    <h1>Как вас зовут?</h1>
-    <p>Укажите имя и при необходимости фамилию.</p>
+    <div class="brand">Sovva</div>
+    <h1>What is your name?</h1>
+    <p>Enter your first name and optionally your last name.</p>
+
     <div class="field">
-      <label for="firstNameInput">Имя</label>
+      <label for="firstNameInput">First name</label>
       <input id="firstNameInput" type="text" autocomplete="given-name" />
     </div>
+
     <div class="field">
-      <label for="lastNameInput">Фамилия (необязательно)</label>
+      <label for="lastNameInput">Last name (optional)</label>
       <input id="lastNameInput" type="text" autocomplete="family-name" />
     </div>
+
     <div id="errMsg" class="err"></div>
-    <button id="nextBtn" type="button">Далее</button>
+    <button id="nextBtn" type="button">Next</button>
   </main>
+
+  <footer class="footer">
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="./support.html">Support</a>
+      <a href="./terms.html">Terms</a>
+      <a href="./privacy.html">Privacy</a>
+    </nav>
+    <div class="copyright">© 2026 Sovva, All rights reserved</div>
+  </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCzok_zQsToh-OzGUBCK4Omx8IELOU9CC4",
@@ -66,19 +208,21 @@
     }
 
     function saveDraft(patch) {
-      const next = { ...loadDraft(), ...patch };
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next));
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...loadDraft(), ...patch }));
     }
 
     const draft = loadDraft();
     if (draft.firstName) firstNameInput.value = draft.firstName;
     if (draft.lastName) lastNameInput.value = draft.lastName;
 
-    onAuthStateChanged(auth, (user) => {
+    (async () => {
+      await auth.authStateReady();
+      const user = auth.currentUser;
       if (!user) {
         window.location.replace("./index.html");
         return;
       }
+
       if (!firstNameInput.value && user.displayName) {
         const parts = user.displayName.trim().split(/\s+/);
         firstNameInput.value = parts[0] || "";
@@ -86,13 +230,13 @@
           lastNameInput.value = parts.slice(1).join(" ");
         }
       }
-    });
+    })();
 
     nextBtn.addEventListener("click", () => {
       const firstName = firstNameInput.value.trim();
       const lastName = lastNameInput.value.trim();
       if (!firstName) {
-        errMsg.textContent = "Пожалуйста, введите имя.";
+        errMsg.textContent = "Please enter your first name.";
         firstNameInput.focus();
         return;
       }
