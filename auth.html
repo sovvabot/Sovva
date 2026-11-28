@@ -117,6 +117,30 @@
       font-size: 13px;
     }
 
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .step-pill {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border);
+      transition: background-color 0.2s ease;
+    }
+
+    .step-pill.active {
+      background: var(--btn-bg);
+    }
+
+    .step-caption {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
     h1 {
       margin: 0;
       font-size: 22px;
@@ -126,6 +150,16 @@
       margin: 4px 0 0;
       font-size: 14px;
       color: var(--muted);
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .screen.active {
+      display: flex;
     }
 
     .field {
@@ -235,6 +269,12 @@
       flex-direction: column;
       gap: 10px;
       margin-top: 4px;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 10px;
     }
 
     .btn-primary {
@@ -357,80 +397,112 @@
     </div>
 
     <div>
-      <h1 id="titleText">Завершение регистрации</h1>
-      <p id="subtitleText" class="subtitle">Заполните данные профиля Sovva</p>
+      <div id="stepCaption" class="step-caption">Шаг 1 из 3</div>
+      <div class="stepper" aria-hidden="true">
+        <div id="pill1" class="step-pill active"></div>
+        <div id="pill2" class="step-pill"></div>
+        <div id="pill3" class="step-pill"></div>
+      </div>
+    </div>
+
+    <div>
+      <h1 id="titleText">Как вас зовут?</h1>
+      <p id="subtitleText" class="subtitle">Укажите имя и при желании фамилию</p>
     </div>
 
     <form id="authForm" novalidate style="display:flex; flex-direction:column; gap:14px;">
-      <div class="field">
-        <label for="firstNameInput" id="firstNameLabel">Имя</label>
-        <input id="firstNameInput" class="input" type="text" autocomplete="given-name" />
-        <span id="firstNameHint" class="hint">Если вы вошли через Google, имя может подставиться автоматически.</span>
-      </div>
-
-      <div class="field">
-        <label for="lastNameInput" id="lastNameLabel">Фамилия</label>
-        <input id="lastNameInput" class="input" type="text" autocomplete="family-name" />
-        <span id="lastNameHint" class="hint">По желанию.</span>
-      </div>
-
-      <div class="field">
-        <label id="genderLabel">Пол</label>
-        <div class="gender-group">
-          <label class="gender-option">
-            <input type="radio" name="gender" value="male" />
-            <span id="genderMale">Мужской</span>
-          </label>
-          <label class="gender-option">
-            <input type="radio" name="gender" value="female" />
-            <span id="genderFemale">Женский</span>
-          </label>
-          <label class="gender-option">
-            <input type="radio" name="gender" value="unspecified" checked />
-            <span id="genderUnspecified">Не указан</span>
-          </label>
+      <!-- ЭКРАН 1: Имя и фамилия -->
+      <section id="screen1" class="screen active" aria-label="Name step">
+        <div class="field">
+          <label for="firstNameInput" id="firstNameLabel">Имя</label>
+          <input id="firstNameInput" class="input" type="text" autocomplete="given-name" />
+          <span id="firstNameHint" class="hint">Если вы вошли через Google, имя может подставиться автоматически.</span>
         </div>
-      </div>
 
-      <div class="field">
-        <label for="dobManualInput" id="dobLabel">Дата рождения</label>
-        <div class="dob-selects">
-          <select id="dobDay" class="input" aria-label="Day"></select>
-          <select id="dobMonth" class="input" aria-label="Month"></select>
-          <select id="dobYear" class="input" aria-label="Year"></select>
+        <div class="field">
+          <label for="lastNameInput" id="lastNameLabel">Фамилия</label>
+          <input id="lastNameInput" class="input" type="text" autocomplete="family-name" />
+          <span id="lastNameHint" class="hint">По желанию.</span>
         </div>
-        <input id="dobManualInput" class="input" type="text" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" maxlength="10" />
-        <span id="dobHint" class="hint">Можно выбрать день, месяц и год списком или ввести вручную в формате ДД.ММ.ГГГГ.</span>
-      </div>
 
-      <div class="field">
-        <label for="passwordInput" id="passwordLabel">Пароль</label>
-        <div class="strength-box">
-          <div class="strength-bar-bg">
-            <div id="strengthFill" class="strength-bar-fill"></div>
+        <div class="actions">
+          <button id="nextFromStep1Btn" class="btn-primary" type="button">Далее</button>
+        </div>
+      </section>
+
+      <!-- ЭКРАН 2: Дата рождения и пол -->
+      <section id="screen2" class="screen" aria-label="Birth date and gender step">
+        <div class="field">
+          <label for="dobManualInput" id="dobLabel">Дата рождения</label>
+          <div class="dob-selects">
+            <select id="dobDay" class="input" aria-label="Day"></select>
+            <select id="dobMonth" class="input" aria-label="Month"></select>
+            <select id="dobYear" class="input" aria-label="Year"></select>
           </div>
-          <div id="strengthText" class="strength-label">Слабый</div>
+          <input id="dobManualInput" class="input" type="text" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" maxlength="10" />
+          <span id="dobHint" class="hint">Можно выбрать день, месяц и год списком или ввести вручную в формате ДД.ММ.ГГГГ.</span>
         </div>
-        <input id="passwordInput" class="input" type="password" autocomplete="new-password" />
-        <ul class="rules-list">
-          <li id="ruleLatin">Только латинские буквы</li>
-          <li id="ruleUpper">Минимум одна заглавная буква (A–Z)</li>
-          <li id="ruleDigitOrUnderscore">Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)</li>
-          <li id="ruleSymbol">Хотя бы один специальный символ (например, ! @ # $ % *)</li>
-        </ul>
-      </div>
 
-      <div class="field">
-        <label for="passwordConfirmInput" id="passwordConfirmLabel">Повторите пароль</label>
-        <input id="passwordConfirmInput" class="input" type="password" autocomplete="new-password" />
-      </div>
+        <div class="field">
+          <label id="genderLabel">Пол</label>
+          <div class="gender-group">
+            <label class="gender-option">
+              <input type="radio" name="gender" value="male" />
+              <span id="genderMale">Мужской</span>
+            </label>
+            <label class="gender-option">
+              <input type="radio" name="gender" value="female" />
+              <span id="genderFemale">Женский</span>
+            </label>
+            <label class="gender-option">
+              <input type="radio" name="gender" value="unspecified" checked />
+              <span id="genderUnspecified">Не указан</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div class="actions-row">
+            <button id="backFromStep2Btn" class="btn-secondary" type="button">Назад</button>
+            <button id="nextFromStep2Btn" class="btn-primary" type="button">Далее</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ЭКРАН 3: Пароль -->
+      <section id="screen3" class="screen" aria-label="Password step">
+        <div class="field">
+          <label for="passwordInput" id="passwordLabel">Пароль</label>
+          <div class="strength-box">
+            <div class="strength-bar-bg">
+              <div id="strengthFill" class="strength-bar-fill"></div>
+            </div>
+            <div id="strengthText" class="strength-label">Слабый</div>
+          </div>
+          <input id="passwordInput" class="input" type="password" autocomplete="new-password" />
+          <ul class="rules-list">
+            <li id="ruleLatin">Только латинские буквы</li>
+            <li id="ruleUpper">Минимум одна заглавная буква (A–Z)</li>
+            <li id="ruleDigitOrUnderscore">Хотя бы одна цифра (0–9) или нижнее подчёркивание (_)</li>
+            <li id="ruleSymbol">Хотя бы один специальный символ (например, ! @ # $ % *)</li>
+          </ul>
+        </div>
+
+        <div class="field">
+          <label for="passwordConfirmInput" id="passwordConfirmLabel">Повторите пароль</label>
+          <input id="passwordConfirmInput" class="input" type="password" autocomplete="new-password" />
+        </div>
+
+        <div class="actions">
+          <div class="actions-row">
+            <button id="backFromStep3Btn" class="btn-secondary" type="button">Назад</button>
+            <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
+          </div>
+          <button id="skipPasswordBtn" class="btn-secondary" type="button">Пропустить пароль</button>
+        </div>
+      </section>
 
       <div id="formError" class="error-msg"></div>
-
-      <div class="actions">
-        <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
-        <button id="skipPasswordBtn" class="btn-secondary" type="button">Пропустить пароль</button>
-      </div>
     </form>
   </div>
 
@@ -458,8 +530,17 @@
   <script>
     const i18n = {
       ru: {
-        title: "Завершение регистрации",
-        subtitle: "Заполните данные профиля Sovva",
+        step1Caption: "Шаг 1 из 3",
+        step2Caption: "Шаг 2 из 3",
+        step3Caption: "Шаг 3 из 3",
+        step1Title: "Как вас зовут?",
+        step1Subtitle: "Укажите имя и при желании фамилию",
+        step2Title: "Дата рождения и пол",
+        step2Subtitle: "Выберите дату рождения и укажите пол",
+        step3Title: "Придумайте пароль",
+        step3Subtitle: "Защитите аккаунт или пропустите этот шаг",
+        backBtn: "Назад",
+        nextBtn: "Далее",
         firstName: "Имя",
         firstNameHint: "Если вы вошли через Google, имя может подставиться автоматически.",
         lastName: "Фамилия",
@@ -503,8 +584,17 @@
         yearPrefix: "Год"
       },
       en: {
-        title: "Complete registration",
-        subtitle: "Fill in your Sovva profile details",
+        step1Caption: "Step 1 of 3",
+        step2Caption: "Step 2 of 3",
+        step3Caption: "Step 3 of 3",
+        step1Title: "What is your name?",
+        step1Subtitle: "Enter your first name and optionally last name",
+        step2Title: "Date of birth & gender",
+        step2Subtitle: "Select your birth date and choose gender",
+        step3Title: "Create a password",
+        step3Subtitle: "Secure your account or skip this step",
+        backBtn: "Back",
+        nextBtn: "Next",
         firstName: "First name",
         firstNameHint: "If signed in with Google, your name may be filled in automatically.",
         lastName: "Last name",
@@ -548,8 +638,17 @@
         yearPrefix: "Year"
       },
       de: {
-        title: "Registrierung abschließen",
-        subtitle: "Fülle deine Sovva-Profildaten aus",
+        step1Caption: "Schritt 1 von 3",
+        step2Caption: "Schritt 2 von 3",
+        step3Caption: "Schritt 3 von 3",
+        step1Title: "Wie heißt du?",
+        step1Subtitle: "Gib deinen Vornamen und optional Nachnamen ein",
+        step2Title: "Geburtsdatum & Geschlecht",
+        step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
+        step3Title: "Passwort festlegen",
+                step3Subtitle: "Schütze dein Konto oder überspringe diesen Schritt",
+        backBtn: "Zurück",
+        nextBtn: "Weiter",
         firstName: "Vorname",
         firstNameHint: "Bei Google-Anmeldung wird der Name oft automatisch eingetragen.",
         lastName: "Nachname",
@@ -608,7 +707,52 @@
     const skipModal = document.getElementById("skipModal");
     const savingOverlay = document.getElementById("savingOverlay");
 
-        function detectInitialLang() {
+    const screen1 = document.getElementById("screen1");
+    const screen2 = document.getElementById("screen2");
+    const screen3 = document.getElementById("screen3");
+    const stepCaption = document.getElementById("stepCaption");
+    const pill1 = document.getElementById("pill1");
+    const pill2 = document.getElementById("pill2");
+    const pill3 = document.getElementById("pill3");
+
+    let currentStep = 1;
+
+    function applyStepHeader(step, lang) {
+      const t = i18n[lang] || i18n.ru;
+      const titleEl = document.getElementById("titleText");
+      const subtitleEl = document.getElementById("subtitleText");
+
+      if (step === 1) {
+        stepCaption.textContent = t.step1Caption;
+        titleEl.textContent = t.step1Title;
+        subtitleEl.textContent = t.step1Subtitle;
+      } else if (step === 2) {
+        stepCaption.textContent = t.step2Caption;
+        titleEl.textContent = t.step2Title;
+        subtitleEl.textContent = t.step2Subtitle;
+      } else {
+        stepCaption.textContent = t.step3Caption;
+        titleEl.textContent = t.step3Title;
+        subtitleEl.textContent = t.step3Subtitle;
+      }
+    }
+
+    function goToStep(step) {
+      currentStep = step;
+      formError.textContent = "";
+
+      screen1.classList.toggle("active", step === 1);
+      screen2.classList.toggle("active", step === 2);
+      screen3.classList.toggle("active", step === 3);
+
+      pill1.classList.toggle("active", step >= 1);
+      pill2.classList.toggle("active", step >= 2);
+      pill3.classList.toggle("active", step >= 3);
+
+      applyStepHeader(step, langSelect.value || "ru");
+    }
+
+    function detectInitialLang() {
       const saved = localStorage.getItem("sovva_lang");
       if (saved && i18n[saved]) return saved;
       const nav = (navigator.language || "ru").toLowerCase().split("-")[0];
@@ -650,12 +794,12 @@
       localStorage.setItem("sovva_lang", lang);
       langSelect.value = lang;
 
-      document.getElementById("titleText").textContent = t.title;
-      document.getElementById("subtitleText").textContent = t.subtitle;
       document.getElementById("firstNameLabel").textContent = t.firstName;
       document.getElementById("firstNameHint").textContent = t.firstNameHint;
       document.getElementById("lastNameLabel").textContent = t.lastName;
       document.getElementById("lastNameHint").textContent = t.lastNameHint;
+      document.getElementById("nextFromStep1Btn").textContent = t.nextBtn;
+
       document.getElementById("genderLabel").textContent = t.gender;
       document.getElementById("genderMale").textContent = t.genderMale;
       document.getElementById("genderFemale").textContent = t.genderFemale;
@@ -663,14 +807,19 @@
       document.getElementById("dobLabel").textContent = t.dob;
       dobManualInput.placeholder = t.dobPlaceholder;
       document.getElementById("dobHint").textContent = t.dobHint;
+      document.getElementById("backFromStep2Btn").textContent = t.backBtn;
+      document.getElementById("nextFromStep2Btn").textContent = t.nextBtn;
+
       document.getElementById("passwordLabel").textContent = t.password;
       document.getElementById("passwordConfirmLabel").textContent = t.passwordConfirm;
       document.getElementById("ruleLatin").textContent = t.ruleLatin;
       document.getElementById("ruleUpper").textContent = t.ruleUpper;
       document.getElementById("ruleDigitOrUnderscore").textContent = t.ruleDigitOrUnderscore;
       document.getElementById("ruleSymbol").textContent = t.ruleSymbol;
+      document.getElementById("backFromStep3Btn").textContent = t.backBtn;
       document.getElementById("submitBtn").textContent = t.submit;
       document.getElementById("skipPasswordBtn").textContent = t.skipPassword;
+
       document.getElementById("modalTitle").textContent = t.modalTitle;
       document.getElementById("modalBody1").textContent = t.modalBody1;
       document.getElementById("modalBody2").textContent = t.modalBody2;
@@ -686,6 +835,7 @@
       });
 
       populateDateSelects(lang);
+      applyStepHeader(currentStep, lang);
       updatePasswordStrength();
     }
 
@@ -791,6 +941,36 @@
       }
     }
 
+    document.getElementById("nextFromStep1Btn").addEventListener("click", () => {
+      const t = i18n[langSelect.value || "ru"] || i18n.ru;
+      formError.textContent = "";
+      if (!document.getElementById("firstNameInput").value.trim()) {
+        formError.textContent = t.errFirstName;
+        document.getElementById("firstNameInput").focus();
+        return;
+      }
+      goToStep(2);
+    });
+
+    document.getElementById("backFromStep2Btn").addEventListener("click", () => {
+      goToStep(1);
+    });
+
+    document.getElementById("nextFromStep2Btn").addEventListener("click", () => {
+      const t = i18n[langSelect.value || "ru"] || i18n.ru;
+      formError.textContent = "";
+      if (!parseAndValidateDob()) {
+        formError.textContent = t.errDob;
+        dobManualInput.focus();
+        return;
+      }
+      goToStep(3);
+    });
+
+    document.getElementById("backFromStep3Btn").addEventListener("click", () => {
+      goToStep(2);
+    });
+
     langSelect.addEventListener("change", () => applyLanguage(langSelect.value));
     themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
     dobDay.addEventListener("change", syncSelectsToManual);
@@ -801,6 +981,7 @@
 
     applyTheme(localStorage.getItem("sovva_theme") || "auto");
     applyLanguage(detectInitialLang());
+    goToStep(1);
   </script>
 
   <script type="module">
@@ -871,12 +1052,14 @@
       const pwConfirm = passwordConfirmInput.value;
 
       if (!firstName) {
+        goToStep(1);
         formError.textContent = t.errFirstName;
         firstNameInput.focus();
         return;
       }
 
       if (!dob) {
+        goToStep(2);
         formError.textContent = t.errDob;
         dobManualInput.focus();
         return;
@@ -884,6 +1067,7 @@
 
       let passwordHash = null;
       if (!skipPassword) {
+        goToStep(3);
         const evalPw = evaluatePassword(pw);
         if (!evalPw.allValid) {
           formError.textContent = t.errPasswordRules;
