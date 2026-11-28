@@ -22,6 +22,7 @@
       --ok: #1a7f37;
       --sheet-bg: #ffffff;
       --backdrop: rgba(0, 0, 0, 0.45);
+      --badge-bg: #eef2f6;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -37,6 +38,7 @@
         --ok: #3fb950;
         --sheet-bg: #161b22;
         --backdrop: rgba(0, 0, 0, 0.65);
+        --badge-bg: #21262d;
       }
     }
     * { box-sizing: border-box; }
@@ -83,7 +85,27 @@
       font-weight: 700;
       flex-shrink: 0;
     }
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
     .nickname { font-size: 20px; font-weight: 700; margin: 0; }
+    .role-badge {
+      display: none;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--badge-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .role-badge.visible {
+      display: inline-flex;
+      align-items: center;
+    }
     .lastname { font-size: 14px; color: var(--muted); margin-top: 2px; }
     .section {
       display: flex;
@@ -196,7 +218,10 @@
       <img id="avatarImg" class="avatar" src="" alt="" style="display:none;" />
       <div id="avatarFallback" class="avatar">S</div>
       <div>
-        <h1 id="nicknameText" class="nickname">Профиль</h1>
+        <div class="name-row">
+          <h1 id="nicknameText" class="nickname">Профиль</h1>
+          <span id="roleBadge" class="role-badge"></span>
+        </div>
         <div id="lastNameText" class="lastname"></div>
       </div>
     </div>
@@ -274,6 +299,9 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    const OWNER_EMAIL = "dundanqwerty@gmail.com";
+    const ADMIN_EMAIL = "dundandanlimon@gmail.com";
+
     const PART_MODELS = {
       "25028RN03A": "Xiaomi Redmi 14C / A-series (25028RN03A)",
       "MWF43LL/A": "iPhone 15 Pro (MWF43LL/A)",
@@ -286,6 +314,7 @@
     const avatarImg = document.getElementById("avatarImg");
     const avatarFallback = document.getElementById("avatarFallback");
     const nicknameText = document.getElementById("nicknameText");
+    const roleBadge = document.getElementById("roleBadge");
     const lastNameText = document.getElementById("lastNameText");
     const passwordSectionTitle = document.getElementById("passwordSectionTitle");
     const newPasswordInput = document.getElementById("newPasswordInput");
@@ -311,6 +340,7 @@
     const okSheetBtn = document.getElementById("okSheetBtn");
 
     let currentUser = null;
+    let currentRole = "user";
     let userHasPassword = false;
     let foreignSessionId = null;
     let unsubActiveSession = null;
@@ -321,12 +351,34 @@
       ("sess_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
     sessionStorage.setItem("sovva_session_id", sessionId);
 
-    function renderProfileUI({ firstName, lastName, photo, hasPassword }) {
+    function resolveRoleByEmail(email) {
+      const normalized = (email || "").trim().toLowerCase();
+      if (normalized === OWNER_EMAIL) return "owner";
+      if (normalized === ADMIN_EMAIL) return "admin";
+      return "user";
+    }
+
+    function renderRoleBadge(role) {
+      currentRole = role || "user";
+      if (currentRole === "owner") {
+        roleBadge.textContent = "Владелец";
+        roleBadge.classList.add("visible");
+      } else if (currentRole === "admin") {
+        roleBadge.textContent = "Админ";
+        roleBadge.classList.add("visible");
+      } else {
+        roleBadge.textContent = "";
+        roleBadge.classList.remove("visible");
+      }
+    }
+
+    function renderProfileUI({ firstName, lastName, photo, hasPassword, role }) {
       const nick = firstName || "Пользователь";
       nicknameText.textContent = nick;
       lastNameText.textContent = lastName || "";
       userHasPassword = Boolean(hasPassword);
       passwordSectionTitle.textContent = userHasPassword ? "Изменить пароль" : "Установить пароль";
+      renderRoleBadge(role);
 
       if (photo) {
         avatarImg.src = photo;
@@ -522,18 +574,21 @@
       if (unsubSessions) unsubSessions();
 
       if (!user) {
-        sessionStorage.removeItem("sovva_profile_cache");
+                sessionStorage.removeItem("sovva_profile_cache");
         window.location.replace("./index.html");
         return;
       }
       currentUser = user;
+
+      const expectedRole = resolveRoleByEmail(user.email);
 
       // Сразу рисуем данные из Auth без ожидания RTDB
       renderProfileUI({
         firstName: user.displayName || "Пользователь",
         lastName: "",
         photo: user.photoURL || "",
-        hasPassword: false
+        hasPassword: false,
+        role: expectedRole
       });
 
       const snap = await get(ref(db, "users/" + user.uid));
@@ -544,11 +599,20 @@
         return;
       }
 
+      if (profile.role !== expectedRole) {
+        await update(ref(db, "users/" + user.uid), {
+          role: expectedRole,
+          email: user.email || ""
+        }).catch(() => {});
+        profile.role = expectedRole;
+      }
+
       const uiData = {
         firstName: profile.firstName || user.displayName || "Пользователь",
         lastName: profile.lastName || "",
         photo: profile.photo || user.photoURL || "",
-        hasPassword: Boolean(profile.hasPassword)
+        hasPassword: Boolean(profile.hasPassword),
+        role: profile.role || expectedRole
       };
       sessionStorage.setItem("sovva_profile_cache", JSON.stringify(uiData));
       renderProfileUI(uiData);
@@ -556,7 +620,18 @@
       // Сначала регистрируем сеанс текущего устройства, потом вешаем слушатели
       await registerCurrentSession(user.uid).catch(() => { sessionReady = true; });
 
-            unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
+      unsubSessions = onValue(ref(db, `sessions/${user.uid}`), async (sSnap) => {
+        if (!sessionReady) return;
+        const latestSessionsMap = sSnap.exists() ? sSnap.val() : {};
+        const curActiveSnap = await get(ref(db, `users/${user.uid}/activeSessionId`));
+        const activeId = curActiveSnap.exists() ? curActiveSnap.val() : null;
+        if (activeId && activeId !== sessionId && !latestSessionsMap[sessionId]) {
+          await signOut(auth);
+          window.location.replace("./index.html");
+        }
+      });
+
+      unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
         if (!sessionReady) return;
         const activeId = aSnap.exists() ? aSnap.val() : null;
         if (!activeId || activeId === sessionId) return;
