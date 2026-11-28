@@ -43,7 +43,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 16px;
+      gap: 14px;
     }
     h1 {
       margin: 0;
@@ -60,6 +60,17 @@
       font-family: inherit;
       font-size: 15px;
       font-weight: 600;
+      cursor: pointer;
+    }
+    .secondary-btn {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
     }
     .status-text {
@@ -113,6 +124,10 @@
       <span>Войти через Google</span>
     </button>
 
+    <button id="switchGoogleBtn" class="secondary-btn" type="button">
+      Выбрать другой аккаунт Google
+    </button>
+
     <p id="statusText" class="status-text"></p>
   </main>
 
@@ -145,7 +160,7 @@
       getAuth,
       GoogleAuthProvider,
       signInWithPopup,
-      onAuthStateChanged
+      signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
       getDatabase,
@@ -170,8 +185,8 @@
     provider.setCustomParameters({ prompt: "select_account" });
 
     const loginBtn = document.getElementById("loginBtn");
+    const switchGoogleBtn = document.getElementById("switchGoogleBtn");
     const statusText = document.getElementById("statusText");
-    let isRedirecting = false;
 
     function getWaitTimeText() {
       const mins = Math.floor(Math.random() * (120 - 15 + 1)) + 15;
@@ -181,8 +196,7 @@
       return m > 0 ? `${h} ч ${m} мин` : `${h} ч`;
     }
 
-    async function routeUser(user) {
-      if (isRedirecting) return;
+    async function routeAfterSignIn(user) {
       const snap = await get(ref(db, "users/" + user.uid));
       const profile = snap.exists() ? snap.val() : null;
 
@@ -195,7 +209,6 @@
         profile.birthDate.trim().length > 0
       );
 
-      isRedirecting = true;
       if (!isRegistered) {
         window.location.replace("./auth.html");
       } else if (profile.hasPassword === true && profile.passwordHash) {
@@ -205,30 +218,27 @@
       }
     }
 
-    loginBtn.addEventListener("click", async () => {
-      statusText.textContent = "Открываем окно Google...";
+    async function openAccountChooser(forceSignOutFirst) {
+      statusText.textContent = "Открываем выбор аккаунта Google...";
       try {
+        if (forceSignOutFirst && auth.currentUser) {
+          await signOut(auth);
+        }
         const result = await signInWithPopup(auth, provider);
-        await routeUser(result.user);
-      } catch (err) {
-        statusText.textContent = "Ошибка входа: " + err.code;
-      }
-    });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-      try {
-        await routeUser(user);
+        await routeAfterSignIn(result.user);
       } catch (err) {
         if (err.code === "PERMISSION_DENIED") {
           statusText.textContent =
             `Упс!!! Кажется, онлайн базы в реальном времени сейчас недоступен.\n` +
             `Подождите, когда база в реальном времени обновится через ${getWaitTimeText()} — сервер сбросится с нуля, и можно будет заходить снова.`;
         } else {
-          statusText.textContent = "Ошибка базы: " + err.code;
+          statusText.textContent = "Ошибка входа: " + err.code;
         }
       }
-    });
+    }
+
+    loginBtn.addEventListener("click", () => openAccountChooser(false));
+    switchGoogleBtn.addEventListener("click", () => openAccountChooser(true));
   </script>
 </body>
 </html>
