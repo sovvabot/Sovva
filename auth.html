@@ -301,6 +301,11 @@
       cursor: pointer;
     }
 
+    .btn-secondary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .error-msg {
       color: var(--danger);
       font-size: 13px;
@@ -396,7 +401,7 @@
       </div>
     </div>
 
-    <div>
+    <div id="stepperBlock">
       <div id="stepCaption" class="step-caption">Шаг 1 из 3</div>
       <div class="stepper" aria-hidden="true">
         <div id="pill1" class="step-pill active"></div>
@@ -409,6 +414,18 @@
       <h1 id="titleText">Как вас зовут?</h1>
       <p id="subtitleText" class="subtitle">Укажите имя и при желании фамилию</p>
     </div>
+
+    <!-- ЭКРАН ВХОДА ПО ПАРОЛЮ (если пароль установлен в облаке) -->
+    <section id="loginPasswordScreen" class="screen" aria-label="Password login screen">
+      <div class="field">
+        <label for="loginPasswordInput" id="loginPasswordLabel">Введите пароль от аккаунта</label>
+        <input id="loginPasswordInput" class="input" type="password" autocomplete="current-password" />
+      </div>
+      <div class="actions">
+        <button id="verifyPasswordBtn" class="btn-primary" type="button">Войти</button>
+        <button id="switchAccountBtn" class="btn-secondary" type="button">Выйти из аккаунта</button>
+      </div>
+    </section>
 
     <form id="authForm" novalidate style="display:flex; flex-direction:column; gap:14px;">
       <!-- ЭКРАН 1: Имя и фамилия -->
@@ -498,7 +515,7 @@
             <button id="backFromStep3Btn" class="btn-secondary" type="button">Назад</button>
             <button id="submitBtn" class="btn-primary" type="submit">Сохранить и продолжить</button>
           </div>
-          <button id="skipPasswordBtn" class="btn-secondary" type="button">Пропустить пароль</button>
+          <button id="skipPasswordBtn" class="btn-secondary" type="button" disabled>Пропустить пароль (нужен уровень «Средний»)</button>
         </div>
       </section>
 
@@ -538,7 +555,14 @@
         step2Title: "Дата рождения и пол",
         step2Subtitle: "Выберите дату рождения и укажите пол",
         step3Title: "Придумайте пароль",
-        step3Subtitle: "Защитите аккаунт или пропустите этот шаг",
+        step3Subtitle: "Защитите аккаунт или пропустите шаг при оценке «Средний»",
+        welcomeBackTitle: (nick) => `С возвращением: ${nick}!`,
+        welcomeBackSubtitle: "Введите пароль, сохранённый в облаке, для входа в аккаунт",
+        loginPasswordLabel: "Пароль",
+        verifyPasswordBtn: "Войти",
+        switchAccountBtn: "Выйти из аккаунта",
+        errWrongPassword: "Неверный пароль.",
+        errSkipOnlyMedium: "Пропустить пароль можно только при пометке «Средний».",
         backBtn: "Назад",
         nextBtn: "Далее",
         firstName: "Имя",
@@ -577,7 +601,7 @@
         errFirstName: "Укажите имя.",
         errDob: "Укажите корректную дату рождения.",
         errPasswordMismatch: "Пароли не совпадают.",
-        errPasswordRules: "Пароль не соответствует требованиям безопасности или нажмите «Пропустить пароль».",
+        errPasswordRules: "Пароль не соответствует требованиям безопасности или доведите его до оценки «Средний» для пропуска.",
         errSave: "Ошибка сохранения в облако: ",
         months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
         dayPrefix: "День",
@@ -592,7 +616,14 @@
         step2Title: "Date of birth & gender",
         step2Subtitle: "Select your birth date and choose gender",
         step3Title: "Create a password",
-        step3Subtitle: "Secure your account or skip this step",
+        step3Subtitle: "Secure your account or skip when strength is Medium",
+        welcomeBackTitle: (nick) => `Welcome back: ${nick}!`,
+        welcomeBackSubtitle: "Enter the password saved in the cloud to sign in",
+        loginPasswordLabel: "Password",
+        verifyPasswordBtn: "Sign in",
+        switchAccountBtn: "Sign out",
+        errWrongPassword: "Incorrect password.",
+        errSkipOnlyMedium: "You can only skip the password when strength is Medium.",
         backBtn: "Back",
         nextBtn: "Next",
         firstName: "First name",
@@ -614,7 +645,7 @@
         ruleLatin: "Latin characters only",
         ruleUpper: "At least one uppercase letter (A–Z)",
         ruleDigitOrUnderscore: "At least one digit (0–9) or underscore (_)",
-        ruleSymbol: "At least one special symbol (e.g. ! @ # $ % *)",
+                ruleSymbol: "At least one special symbol (e.g. ! @ # $ % *)",
         submit: "Save and continue",
         skipPassword: "Skip password",
         modalTitle: "Warning! Are you sure you want to skip the password?",
@@ -631,7 +662,7 @@
         errFirstName: "Please enter your first name.",
         errDob: "Please enter a valid date of birth.",
         errPasswordMismatch: "Passwords do not match.",
-        errPasswordRules: "Password does not meet the rules, or click 'Skip password'.",
+        errPasswordRules: "Password does not meet the rules, or reach Medium strength to skip.",
         errSave: "Cloud save error: ",
         months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         dayPrefix: "Day",
@@ -646,7 +677,14 @@
         step2Title: "Geburtsdatum & Geschlecht",
         step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
         step3Title: "Passwort festlegen",
-                step3Subtitle: "Schütze dein Konto oder überspringe diesen Schritt",
+        step3Subtitle: "Schütze dein Konto oder überspringe bei Stärke Mittel",
+        welcomeBackTitle: (nick) => `Willkommen zurück: ${nick}!`,
+        welcomeBackSubtitle: "Gib dein in der Cloud gespeichertes Passwort ein",
+        loginPasswordLabel: "Passwort",
+        verifyPasswordBtn: "Anmelden",
+        switchAccountBtn: "Abmelden",
+        errWrongPassword: "Falsches Passwort.",
+        errSkipOnlyMedium: "Überspringen ist nur bei der Bewertung „Mittel“ möglich.",
         backBtn: "Zurück",
         nextBtn: "Weiter",
         firstName: "Vorname",
@@ -685,7 +723,7 @@
         errFirstName: "Bitte gib deinen Vornamen ein.",
         errDob: "Bitte gib ein gültiges Geburtsdatum ein.",
         errPasswordMismatch: "Die Passwörter stimmen nicht überein.",
-        errPasswordRules: "Das Passwort erfüllt nicht alle Regeln oder klicke auf „Passwort überspringen“.",
+        errPasswordRules: "Das Passwort erfüllt nicht alle Regeln oder erreiche „Mittel“ zum Überspringen.",
         errSave: "Cloud-Speicherfehler: ",
         months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
         dayPrefix: "Tag",
@@ -706,7 +744,11 @@
     const formError = document.getElementById("formError");
     const skipModal = document.getElementById("skipModal");
     const savingOverlay = document.getElementById("savingOverlay");
+    const skipPasswordBtn = document.getElementById("skipPasswordBtn");
 
+    const loginPasswordScreen = document.getElementById("loginPasswordScreen");
+    const authForm = document.getElementById("authForm");
+    const stepperBlock = document.getElementById("stepperBlock");
     const screen1 = document.getElementById("screen1");
     const screen2 = document.getElementById("screen2");
     const screen3 = document.getElementById("screen3");
@@ -716,11 +758,28 @@
     const pill3 = document.getElementById("pill3");
 
     let currentStep = 1;
+    let isPasswordLoginMode = false;
+    let returningNickname = "";
+
+    window.setReturningPasswordMode = function (nickname) {
+      isPasswordLoginMode = true;
+      returningNickname = nickname || "Пользователь";
+      stepperBlock.style.display = "none";
+      authForm.style.display = "none";
+      loginPasswordScreen.classList.add("active");
+      applyLanguage(langSelect.value || "ru");
+    };
 
     function applyStepHeader(step, lang) {
       const t = i18n[lang] || i18n.ru;
       const titleEl = document.getElementById("titleText");
       const subtitleEl = document.getElementById("subtitleText");
+
+      if (isPasswordLoginMode) {
+        titleEl.textContent = t.welcomeBackTitle(returningNickname);
+        subtitleEl.textContent = t.welcomeBackSubtitle;
+        return;
+      }
 
       if (step === 1) {
         stepCaption.textContent = t.step1Caption;
@@ -738,6 +797,11 @@
     }
 
     function goToStep(step) {
+      isPasswordLoginMode = false;
+      stepperBlock.style.display = "block";
+      authForm.style.display = "flex";
+      loginPasswordScreen.classList.remove("active");
+
       currentStep = step;
       formError.textContent = "";
 
@@ -794,6 +858,10 @@
       localStorage.setItem("sovva_lang", lang);
       langSelect.value = lang;
 
+      document.getElementById("loginPasswordLabel").textContent = t.loginPasswordLabel;
+      document.getElementById("verifyPasswordBtn").textContent = t.verifyPasswordBtn;
+      document.getElementById("switchAccountBtn").textContent = t.switchAccountBtn;
+
       document.getElementById("firstNameLabel").textContent = t.firstName;
       document.getElementById("firstNameHint").textContent = t.firstNameHint;
       document.getElementById("lastNameLabel").textContent = t.lastName;
@@ -818,7 +886,7 @@
       document.getElementById("ruleSymbol").textContent = t.ruleSymbol;
       document.getElementById("backFromStep3Btn").textContent = t.backBtn;
       document.getElementById("submitBtn").textContent = t.submit;
-      document.getElementById("skipPasswordBtn").textContent = t.skipPassword;
+      skipPasswordBtn.textContent = t.skipPassword;
 
       document.getElementById("modalTitle").textContent = t.modalTitle;
       document.getElementById("modalBody1").textContent = t.modalBody1;
@@ -898,13 +966,13 @@
       const hasSymbol = /[^A-Za-z0-9_]/.test(pw);
 
       const allValid = onlyLatin && hasUpper && hasDigitOrUnderscore && hasSymbol && pw.length >= 6;
-      const mediumValid = onlyLatin && pw.length >= 4 && (hasUpper || hasDigitOrUnderscore || hasSymbol);
+      const mediumValid = onlyLatin && pw.length >= 4 && (hasUpper || hasDigitOrUnderscore || hasSymbol) && !allValid;
 
       let level = "weak";
       if (allValid) level = "strong";
       else if (mediumValid) level = "medium";
 
-      return { onlyLatin, hasUpper, hasDigitOrUnderscore, hasSymbol, allValid, level };
+      return { onlyLatin, hasUpper, hasDigitOrUnderscore, hasSymbol, allValid, mediumValid, level };
     }
 
     function updatePasswordStrength() {
@@ -922,6 +990,8 @@
       rUpper.className = res.hasUpper ? "rule-ok" : "";
       rDigit.className = res.hasDigitOrUnderscore ? "rule-ok" : "";
       rSym.className = res.hasSymbol ? "rule-ok" : "";
+
+      skipPasswordBtn.disabled = res.level !== "medium";
 
       if (res.level === "strong") {
         strengthFill.style.width = "100%";
@@ -986,7 +1056,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
       getDatabase,
       ref,
@@ -1013,22 +1083,15 @@
     const firstNameInput = document.getElementById("firstNameInput");
     const lastNameInput = document.getElementById("lastNameInput");
     const authForm = document.getElementById("authForm");
-    const skipPasswordBtn = document.getElementById("skipPasswordBtn");
+    const skipBtn = document.getElementById("skipPasswordBtn");
     const setPasswordNowBtn = document.getElementById("setPasswordNowBtn");
     const confirmSkipBtn = document.getElementById("confirmSkipBtn");
+    const verifyPasswordBtn = document.getElementById("verifyPasswordBtn");
+    const switchAccountBtn = document.getElementById("switchAccountBtn");
+    const loginPasswordInput = document.getElementById("loginPasswordInput");
 
     let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      if (user && user.displayName && !firstNameInput.value.trim()) {
-        const parts = user.displayName.trim().split(/\s+/);
-        firstNameInput.value = parts[0] || "";
-        if (parts.length > 1 && !lastNameInput.value.trim()) {
-          lastNameInput.value = parts.slice(1).join(" ");
-        }
-      }
-    });
+    let cloudProfile = null;
 
     async function hashPassword(pw) {
       const encoder = new TextEncoder();
@@ -1038,6 +1101,65 @@
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
     }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (!user) return;
+
+      if (user.displayName && !firstNameInput.value.trim()) {
+        const parts = user.displayName.trim().split(/\s+/);
+        firstNameInput.value = parts[0] || "";
+        if (parts.length > 1 && !lastNameInput.value.trim()) {
+          lastNameInput.value = parts.slice(1).join(" ");
+        }
+      }
+
+            try {
+        const snap = await get(ref(db, "users/" + user.uid));
+        if (!snap.exists()) return;
+        const profile = snap.val();
+        cloudProfile = profile;
+
+        if (profile.registrationCompleted === true) {
+          if (profile.hasPassword === true && profile.passwordHash) {
+            const nick = profile.firstName || user.displayName || "Пользователь";
+            window.setReturningPasswordMode(nick);
+          } else {
+            window.location.replace("./sovva.html");
+          }
+        }
+      } catch (_) {}
+    });
+
+    verifyPasswordBtn.addEventListener("click", async () => {
+      const lang = document.getElementById("langSelect").value || "ru";
+      const t = i18n[lang] || i18n.ru;
+      formError.textContent = "";
+
+      if (!cloudProfile || !cloudProfile.passwordHash) {
+        window.location.replace("./sovva.html");
+        return;
+      }
+
+      const enteredHash = await hashPassword(loginPasswordInput.value);
+      if (enteredHash !== cloudProfile.passwordHash) {
+        formError.textContent = t.errWrongPassword;
+        loginPasswordInput.focus();
+        return;
+      }
+
+      if (currentUser) {
+        await update(ref(db, "users/" + currentUser.uid), {
+          lastLogin: serverTimestamp()
+        });
+      }
+      window.location.replace("./sovva.html");
+    });
+
+    switchAccountBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.replace("./index.html");
+    });
 
     async function saveProfileToCloud(skipPassword) {
       const lang = document.getElementById("langSelect").value || "ru";
@@ -1066,7 +1188,14 @@
       }
 
       let passwordHash = null;
-      if (!skipPassword) {
+      if (skipPassword) {
+        const evalPw = evaluatePassword(pw);
+        if (evalPw.level !== "medium") {
+          goToStep(3);
+          formError.textContent = t.errSkipOnlyMedium;
+          return;
+        }
+      } else {
         goToStep(3);
         const evalPw = evaluatePassword(pw);
         if (!evalPw.allValid) {
@@ -1116,7 +1245,7 @@
           });
         }
 
-        window.location.href = "./index.html";
+        window.location.replace("./sovva.html");
       } catch (err) {
         savingOverlay.classList.remove("active");
         formError.textContent = t.errSave + (err.code || err.message);
@@ -1128,7 +1257,14 @@
       await saveProfileToCloud(false);
     });
 
-    skipPasswordBtn.addEventListener("click", () => {
+    skipBtn.addEventListener("click", () => {
+      const lang = document.getElementById("langSelect").value || "ru";
+      const t = i18n[lang] || i18n.ru;
+      const evalPw = evaluatePassword(passwordInput.value);
+      if (evalPw.level !== "medium") {
+        formError.textContent = t.errSkipOnlyMedium;
+        return;
+      }
       skipModal.classList.add("active");
     });
 
