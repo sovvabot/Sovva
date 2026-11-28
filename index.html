@@ -100,6 +100,7 @@
       color: #dc2626;
       font-size: 13px;
       min-height: 18px;
+      word-break: break-word;
     }
 
     .footer {
@@ -162,9 +163,9 @@
     import {
       getAuth,
       GoogleAuthProvider,
+      signInWithPopup,
       signInWithRedirect,
-      getRedirectResult,
-      onAuthStateChanged
+      getRedirectResult
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
@@ -189,14 +190,14 @@
     let routingStarted = false;
 
     function goTo(url) {
-      window.location.assign(url);
+      window.location.href = new URL(url, window.location.href).href;
     }
 
     async function routeAfterAuth(user) {
       if (!user || routingStarted) return;
       routingStarted = true;
       googleLoginBtn.disabled = true;
-      statusMsg.textContent = "Checking account...";
+      statusMsg.textContent = "Signed in. Checking profile...";
       errMsg.textContent = "";
 
       try {
@@ -216,32 +217,47 @@
       }
     }
 
-    getRedirectResult(auth)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await getRedirectResult(auth);
         if (res?.user) {
-          routeAfterAuth(res.user);
+          await routeAfterAuth(res.user);
+          return;
         }
-      })
-      .catch((err) => {
-        errMsg.textContent = err?.message || "Google sign-in error.";
-      });
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        routeAfterAuth(user);
+      } catch (err) {
+        errMsg.textContent = err?.code ? `${err.code}: ${err.message}` : (err?.message || "Redirect error");
       }
-    });
+
+      await auth.authStateReady();
+      if (auth.currentUser) {
+        await routeAfterAuth(auth.currentUser);
+      }
+    })();
 
     googleLoginBtn.addEventListener("click", async () => {
       errMsg.textContent = "";
-      statusMsg.textContent = "Redirecting to Google...";
+      statusMsg.textContent = "Opening Google sign-in...";
       googleLoginBtn.disabled = true;
       try {
-        await signInWithRedirect(auth, provider);
+        const res = await signInWithPopup(auth, provider);
+        if (res?.user) {
+          await routeAfterAuth(res.user);
+        }
       } catch (err) {
+        const code = err?.code || "";
+        if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
+          statusMsg.textContent = "Redirecting to Google...";
+          try {
+            await signInWithRedirect(auth, provider);
+            return;
+          } catch (redirErr) {
+            errMsg.textContent = redirErr?.message || "Redirect failed";
+          }
+        } else if (code !== "auth/popup-closed-by-user") {
+          errMsg.textContent = code ? `${code}: ${err.message}` : (err?.message || "Sign-in error");
+        }
         statusMsg.textContent = "";
         googleLoginBtn.disabled = false;
-        errMsg.textContent = err?.message || "Could not start Google sign-in.";
       }
     });
   </script>
