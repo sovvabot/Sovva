@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,6 +20,8 @@
       --btn-text: #ffffff;
       --danger: #cf222e;
       --ok: #1a7f37;
+      --sheet-bg: #ffffff;
+      --backdrop: rgba(0, 0, 0, 0.45);
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -33,6 +35,8 @@
         --btn-text: #0d1117;
         --danger: #f85149;
         --ok: #3fb950;
+        --sheet-bg: #161b22;
+        --backdrop: rgba(0, 0, 0, 0.65);
       }
     }
     * { box-sizing: border-box; }
@@ -77,16 +81,8 @@
       font-weight: 700;
       flex-shrink: 0;
     }
-    .nickname {
-      font-size: 20px;
-      font-weight: 700;
-      margin: 0;
-    }
-    .lastname {
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
+    .nickname { font-size: 20px; font-weight: 700; margin: 0; }
+    .lastname { font-size: 14px; color: var(--muted); margin-top: 2px; }
     .section {
       display: flex;
       flex-direction: column;
@@ -94,11 +90,7 @@
       padding-top: 14px;
       border-top: 1px solid var(--border);
     }
-    .section-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin: 0;
-    }
+    .section-title { font-size: 15px; font-weight: 600; margin: 0; }
     .input {
       width: 100%;
       padding: 10px 12px;
@@ -119,30 +111,94 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .btn-primary {
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      border-color: var(--btn-bg);
+    .btn-primary { background: var(--btn-bg); color: var(--btn-text); border-color: var(--btn-bg); }
+    .btn-secondary { background: transparent; color: var(--text); }
+    .btn-danger { background: var(--danger); color: #ffffff; border-color: var(--danger); }
+    .btn-outline-danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+    .msg-ok { font-size: 13px; color: var(--ok); min-height: 18px; }
+    .msg-err { font-size: 13px; color: var(--danger); min-height: 18px; }
+
+    /* Нижнее окно (Bottom Sheet) */
+    .sheet-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--backdrop);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
     }
-    .btn-secondary {
+    .sheet-backdrop.open { display: flex; }
+    .sheet-backdrop.minimized {
+      background: transparent;
+      pointer-events: none;
+    }
+    .sheet {
+      width: 100%;
+      max-width: 540px;
+      background: var(--sheet-bg);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 18px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: auto;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    }
+    .sheet-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--border);
+      margin: 0 auto 4px;
+    }
+    .sheet-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--danger);
+    }
+    .sheet-title.ok { color: var(--ok); }
+    .icon-btn {
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
       background: transparent;
       color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
     }
-    .btn-danger {
-      background: transparent;
-      color: var(--danger);
-      border-color: var(--danger);
+    .sheet-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
     }
-    .msg-ok {
-      font-size: 13px;
-      color: var(--ok);
-      min-height: 18px;
+    .sheet-note {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin: 0;
     }
-    .msg-err {
-      font-size: 13px;
-      color: var(--danger);
-      min-height: 18px;
+    .sheet-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
     }
+    .sheet-body.collapsed { display: none; }
   </style>
 </head>
 <body>
@@ -158,7 +214,7 @@
 
     <div class="section">
       <h2 id="passwordSectionTitle" class="section-title">Установить или изменить пароль</h2>
-      <input id="newPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Новый пароль (A-Z, цифра или _, символ, от 6 символов)" />
+      <input id="newPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Новый пароль" />
       <input id="confirmNewPasswordInput" class="input" type="password" autocomplete="new-password" placeholder="Повторите новый пароль" />
       <button id="savePasswordBtn" class="btn btn-primary" type="button">Сохранить пароль</button>
       <div id="statusOk" class="msg-ok"></div>
@@ -167,7 +223,39 @@
 
     <div class="section">
       <button id="logoutBtn" class="btn btn-secondary" type="button">Выйти из аккаунта</button>
-      <button id="deleteAccountBtn" class="btn btn-danger" type="button">Удалить аккаунт</button>
+      <button id="deleteAccountBtn" class="btn btn-outline-danger" type="button">Удалить аккаунт</button>
+    </div>
+  </div>
+
+  <!-- Нижнее окно тревоги / завершения сеанса -->
+  <div id="securitySheetBackdrop" class="sheet-backdrop" role="dialog" aria-modal="false">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-top">
+        <h2 id="sheetTitle" class="sheet-title">В ваш аккаунт вошло подозрительное устройство</h2>
+        <button id="toggleMinimizeBtn" class="icon-btn" type="button">Свернуть</button>
+      </div>
+
+      <div id="sheetBody" class="sheet-body" style="display:flex; flex-direction:column; gap:10px;">
+        <ul id="suspiciousDetailsList" class="sheet-list">
+          <li id="detailDeviceLine">Android/iOS: определение устройства...</li>
+          <li id="detailIpLine">IP: определяется...</li>
+          <li id="detailRegionLine">Регион: определяется...</li>
+        </ul>
+        <p class="sheet-note">Из-за ВПН Регион и IP адрес показывается неточно</p>
+        <p id="sheetWarningText" style="margin:0; font-size:14px; font-weight:500;">
+          Если это были не вы, немедленно завершите сеанс
+        </p>
+
+        <div id="alertActions" class="sheet-actions">
+          <button id="endSuspiciousSessionBtn" class="btn btn-danger" type="button">Завершить сеанс</button>
+        </div>
+
+        <div id="postTerminateActions" class="sheet-actions" style="display:none;">
+          <button id="passwordActionBtn" class="btn btn-primary" type="button">Поставить пароль</button>
+          <button id="okSheetBtn" class="btn btn-secondary" type="button">ОК</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -178,8 +266,10 @@
       getDatabase,
       ref,
       get,
+      set,
       update,
       remove,
+      onValue,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
@@ -197,6 +287,15 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    const PART_MODELS = {
+      "25028RN03A": "Xiaomi Redmi 14C / A-series (25028RN03A)",
+      "MWF43LL/A": "iPhone 15 Pro (MWF43LL/A)",
+      "MTUX3LL/A": "iPhone 15 (MTUX3LL/A)",
+      "MQ0G3LL/A": "iPhone 14 Pro (MQ0G3LL/A)",
+      "MPVN3LL/A": "iPhone 14 (MPVN3LL/A)",
+      "MNWC3LL/A": "iPhone 13 (MNWC3LL/A)"
+    };
+
     const avatarImg = document.getElementById("avatarImg");
     const avatarFallback = document.getElementById("avatarFallback");
     const nicknameText = document.getElementById("nicknameText");
@@ -210,15 +309,139 @@
     const statusOk = document.getElementById("statusOk");
     const statusErr = document.getElementById("statusErr");
 
-    let currentUser = null;
+    const sheetBackdrop = document.getElementById("securitySheetBackdrop");
+    const sheetTitle = document.getElementById("sheetTitle");
+    const sheetBody = document.getElementById("sheetBody");
+    const toggleMinimizeBtn = document.getElementById("toggleMinimizeBtn");
+    const suspiciousDetailsList = document.getElementById("suspiciousDetailsList");
+    const detailDeviceLine = document.getElementById("detailDeviceLine");
+    const detailIpLine = document.getElementById("detailIpLine");
+    const detailRegionLine = document.getElementById("detailRegionLine");
+    const sheetWarningText = document.getElementById("sheetWarningText");
+    const alertActions = document.getElementById("alertActions");
+    const postTerminateActions = document.getElementById("postTerminateActions");
+    const endSuspiciousSessionBtn = document.getElementById("endSuspiciousSessionBtn");
+    const passwordActionBtn = document.getElementById("passwordActionBtn");
+    const okSheetBtn = document.getElementById("okSheetBtn");
 
-    function isStrongPassword(pw) {
-      const onlyLatin = /^[A-Za-z0-9_!@#$%^&*()\-+=.?~[\]{}|;:'",/<>\\]+$/.test(pw);
-      const hasUpper = /[A-Z]/.test(pw);
-      const hasDigitOrUnderscore = /[0-9_]/.test(pw);
-      const hasSymbol = /[^A-Za-z0-9_]/.test(pw);
-      return pw.length >= 6 && onlyLatin && hasUpper && hasDigitOrUnderscore && hasSymbol;
+    let currentUser = null;
+    let userHasPassword = false;
+    let foreignSessionId = null;
+    let isMinimized = false;
+    let unsubActiveSession = null;
+    let unsubSessions = null;
+
+    const sessionId = sessionStorage.getItem("sovva_session_id") ||
+      ("sess_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
+    sessionStorage.setItem("sovva_session_id", sessionId);
+
+    function detectDeviceLabel() {
+      const ua = navigator.userAgent || "";
+      const savedPart = localStorage.getItem("sovva_device_part") || "";
+      const partMatch = savedPart.trim().toUpperCase() ||
+        (ua.match(/\b(25028RN03A|M[A-Z0-9]{4,7}\/[A-Z]{1,2})\b/i)?.[1]?.toUpperCase() || "");
+
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      const isAndroid = /Android/i.test(ua);
+      const osName = isIOS ? "iOS" : isAndroid ? "Android" : "Web/Desktop";
+
+      if (partMatch) {
+        const modelName = PART_MODELS[partMatch] || (isIOS ? `iPhone (${partMatch})` : `Android (${partMatch})`);
+        return `${osName} (${partMatch} — ${modelName})`;
+      }
+      return `${osName} (${ua.slice(0, 60) || "Устройство"})`;
     }
+
+    async function fetchNetworkInfo() {
+      try {
+        const res = await fetch("https://ipwho.is/", { cache: "no-store" });
+        const data = await res.json();
+        if (data && data.success !== false) {
+          return {
+            ip: data.ip || "Не определён",
+            region: [data.city, data.region, data.country].filter(Boolean).join(", ") || "Не определён"
+          };
+        }
+      } catch (_) {}
+      return { ip: "Не определён", region: "Не определён" };
+    }
+
+    async function registerCurrentSession(uid) {
+      const net = await fetchNetworkInfo();
+      const deviceLabel = detectDeviceLabel();
+      const sessRef = ref(db, `sessions/${uid}/${sessionId}`);
+      await set(sessRef, {
+        sessionId,
+        device: deviceLabel,
+        ip: net.ip,
+        region: net.region,
+        updatedAt: serverTimestamp()
+      });
+      await update(ref(db, `users/${uid}`), {
+        activeSessionId: sessionId
+      });
+    }
+
+    function openSecuritySheet(remoteSession) {
+      foreignSessionId = remoteSession?.sessionId || null;
+      isMinimized = false;
+      sheetBackdrop.classList.remove("minimized");
+      sheetBody.classList.remove("collapsed");
+      toggleMinimizeBtn.textContent = "Свернуть";
+
+      sheetTitle.textContent = "В ваш аккаунт вошло подозрительное устройство";
+      sheetTitle.classList.remove("ok");
+      suspiciousDetailsList.style.display = "flex";
+      detailDeviceLine.textContent = `Android/iOS: ${remoteSession?.device || "Неизвестное устройство"}`;
+      detailIpLine.textContent = `IP: ${remoteSession?.ip || "Не определён"}`;
+      detailRegionLine.textContent = `Регион: ${remoteSession?.region || "Не определён"}`;
+
+      sheetWarningText.textContent = "Если это были не вы, немедленно завершите сеанс";
+      alertActions.style.display = "flex";
+      postTerminateActions.style.display = "none";
+      sheetBackdrop.classList.add("open");
+    }
+
+    function showSessionTerminatedState() {
+      sheetTitle.textContent = "Сеанс устройства этого аккаунта успешно завершен";
+      sheetTitle.classList.add("ok");
+      suspiciousDetailsList.style.display = "none";
+      sheetWarningText.textContent = userHasPassword
+        ? "Для вашей безопасности аккаунта, рекомендуем сменить пароль"
+        : "Для вашей безопасности аккаунта, рекомендуем поставить пароль";
+      passwordActionBtn.textContent = userHasPassword ? "Сменить пароль" : "Поставить пароль";
+      alertActions.style.display = "none";
+      postTerminateActions.style.display = "flex";
+      sheetBackdrop.classList.add("open");
+    }
+
+    toggleMinimizeBtn.addEventListener("click", () => {
+      isMinimized = !isMinimized;
+      sheetBackdrop.classList.toggle("minimized", isMinimized);
+      sheetBody.classList.toggle("collapsed", isMinimized);
+      toggleMinimizeBtn.textContent = isMinimized ? "Развернуть" : "Свернуть";
+    });
+
+    endSuspiciousSessionBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+      if (foreignSessionId) {
+        await remove(ref(db, `sessions/${currentUser.uid}/${foreignSessionId}`)).catch(() => {});
+      }
+      await update(ref(db, `users/${currentUser.uid}`), {
+        activeSessionId: sessionId
+      }).catch(() => {});
+      showSessionTerminatedState();
+    });
+
+    passwordActionBtn.addEventListener("click", () => {
+      sheetBackdrop.classList.remove("open");
+      newPasswordInput.focus();
+      newPasswordInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    okSheetBtn.addEventListener("click", () => {
+      sheetBackdrop.classList.remove("open");
+    });
 
     async function hashPassword(pw) {
       const encoder = new TextEncoder();
@@ -230,6 +453,9 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
+      if (unsubActiveSession) unsubActiveSession();
+      if (unsubSessions) unsubSessions();
+
       if (!user) {
         window.location.replace("./index.html");
         return;
@@ -244,12 +470,13 @@
         return;
       }
 
+      userHasPassword = Boolean(profile.hasPassword);
       const nick = profile.firstName || user.displayName || "Пользователь";
       const last = profile.lastName || "";
 
       nicknameText.textContent = nick;
       lastNameText.textContent = last;
-      passwordSectionTitle.textContent = profile.hasPassword ? "Изменить пароль" : "Установить пароль";
+      passwordSectionTitle.textContent = userHasPassword ? "Изменить пароль" : "Установить пароль";
 
       const photoUrl = profile.photo || user.photoURL || "";
       if (photoUrl) {
@@ -259,6 +486,28 @@
       } else {
         avatarFallback.textContent = nick.charAt(0).toUpperCase() || "S";
       }
+
+      await registerCurrentSession(user.uid);
+
+      let latestSessionsMap = {};
+      unsubSessions = onValue(ref(db, `sessions/${user.uid}`), async (sSnap) => {
+        latestSessionsMap = sSnap.exists() ? sSnap.val() : {};
+        const curActiveSnap = await get(ref(db, `users/${user.uid}/activeSessionId`));
+        const activeId = curActiveSnap.exists() ? curActiveSnap.val() : null;
+        if (activeId && activeId !== sessionId && !latestSessionsMap[sessionId]) {
+          await signOut(auth);
+          window.location.replace("./index.html");
+        }
+      });
+
+      unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
+        const activeId = aSnap.exists() ? aSnap.val() : null;
+        if (!activeId || activeId === sessionId) return;
+
+        const sessSnap = await get(ref(db, `sessions/${user.uid}/${activeId}`));
+        const remoteInfo = sessSnap.exists() ? sessSnap.val() : { sessionId: activeId };
+        openSecuritySheet(remoteInfo);
+      });
     });
 
     savePasswordBtn.addEventListener("click", async () => {
@@ -268,8 +517,8 @@
       const pw = newPasswordInput.value;
       const pw2 = confirmNewPasswordInput.value;
 
-      if (!isStrongPassword(pw)) {
-        statusErr.textContent = "Пароль должен быть от 6 символов, на латинице, содержать заглавную букву, цифру или _ и спецсимвол.";
+      if (!pw) {
+        statusErr.textContent = "Введите пароль.";
         return;
       }
       if (pw !== pw2) {
@@ -284,6 +533,7 @@
           passwordHash: hash,
           updatedAt: serverTimestamp()
         });
+        userHasPassword = true;
         newPasswordInput.value = "";
         confirmNewPasswordInput.value = "";
         passwordSectionTitle.textContent = "Изменить пароль";
@@ -295,13 +545,14 @@
 
     logoutBtn.addEventListener("click", async () => {
       if (currentUser) {
+        await remove(ref(db, `sessions/${currentUser.uid}/${sessionId}`)).catch(() => {});
         await remove(ref(db, "online/" + currentUser.uid)).catch(() => {});
       }
       await signOut(auth);
       window.location.replace("./index.html");
     });
 
-    deleteAccountBtn.addEventListener("click", () => {
+        deleteAccountBtn.addEventListener("click", () => {
       window.location.href = "./deleteaccount.html";
     });
   </script>
