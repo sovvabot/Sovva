@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="auto">
+<html lang="ru" data-theme="auto">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,6 +23,8 @@
       --warn: #d97706;
       --ok: #1a7f37;
       --overlay: rgba(0, 0, 0, 0.55);
+      --sheet-bg: #ffffff;
+      --backdrop: rgba(0, 0, 0, 0.45);
     }
 
     :root[data-theme="dark"] {
@@ -39,6 +41,8 @@
       --warn: #e3b341;
       --ok: #3fb950;
       --overlay: rgba(0, 0, 0, 0.72);
+      --sheet-bg: #161b22;
+      --backdrop: rgba(0, 0, 0, 0.65);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -56,6 +60,8 @@
         --warn: #e3b341;
         --ok: #3fb950;
         --overlay: rgba(0, 0, 0, 0.72);
+        --sheet-bg: #161b22;
+        --backdrop: rgba(0, 0, 0, 0.65);
       }
     }
 
@@ -286,6 +292,18 @@
       cursor: pointer;
     }
 
+    .btn-danger {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--danger);
+      background: var(--danger);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .error-msg {
       color: var(--danger);
       font-size: 13px;
@@ -361,6 +379,88 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* Нижнее окно тревоги (Bottom Sheet) */
+    .sheet-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--backdrop);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .sheet-backdrop.open { display: flex; }
+    .sheet-backdrop.minimized {
+      background: transparent;
+      pointer-events: none;
+    }
+    .sheet {
+      width: 100%;
+      max-width: 540px;
+      background: var(--sheet-bg);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 18px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: auto;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    }
+    .sheet-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--border);
+      margin: 0 auto 4px;
+    }
+    .sheet-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--danger);
+    }
+    .sheet-title.ok { color: var(--ok); }
+    .icon-btn {
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .sheet-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .sheet-note {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .sheet-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .sheet-body.collapsed { display: none; }
   </style>
 </head>
 <body>
@@ -497,6 +597,38 @@
     </form>
   </div>
 
+  <!-- Нижнее окно тревоги / завершения сеанса -->
+  <div id="securitySheetBackdrop" class="sheet-backdrop" role="dialog" aria-modal="false">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-top">
+        <h2 id="sheetTitle" class="sheet-title">В ваш аккаунт вошло подозрительное устройство</h2>
+        <button id="toggleMinimizeBtn" class="icon-btn" type="button">Свернуть</button>
+      </div>
+
+      <div id="sheetBody" class="sheet-body" style="display:flex; flex-direction:column; gap:10px;">
+        <ul id="suspiciousDetailsList" class="sheet-list">
+          <li id="detailDeviceLine">Android/iOS: определение устройства...</li>
+          <li id="detailIpLine">IP: определяется...</li>
+          <li id="detailRegionLine">Регион: определяется...</li>
+        </ul>
+        <p class="sheet-note">Из-за ВПН Регион и IP адрес показывается неточно</p>
+        <p id="sheetWarningText" style="margin:0; font-size:14px; font-weight:500;">
+          Если это были не вы, немедленно завершите сеанс
+        </p>
+
+        <div id="alertActions" class="sheet-actions">
+          <button id="endSuspiciousSessionBtn" class="btn-danger" type="button">Завершить сеанс</button>
+        </div>
+
+        <div id="postTerminateActions" class="sheet-actions" style="display:none;">
+          <button id="passwordActionBtn" class="btn-primary" type="button">Поставить пароль</button>
+          <button id="okSheetBtn" class="btn-secondary" type="button">ОК</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="skipModal" class="saving-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <h2 id="modalTitle">Внимание! Вы точно хотите пропустить пароль?</h2>
@@ -557,7 +689,7 @@
         submit: "Сохранить и продолжить",
         skipPassword: "Пропустить пароль",
         modalTitle: "Внимание! Вы точно хотите пропустить пароль?",
-        modalBody1: "Если вы пропустите регистрацию пароля, ваш аккаунт может быть под угрозой от мошенников или злоумышленников.",
+                modalBody1: "Если вы пропустите регистрацию пароля, ваш аккаунт может быть под угрозой от мошенников или злоумышленников.",
         modalBody2: "Также в любой момент вы можете поставить пароль.",
         modalDisclaimer: "Разработчик не несёт ответственности за ваш аккаунт!",
         setPasswordNow: "Установить пароль",
@@ -639,7 +771,7 @@
         step1Title: "Wie heißt du?",
         step1Subtitle: "Gib deinen Vornamen und optional Nachnamen ein",
         step2Title: "Geburtsdatum & Geschlecht",
-                step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
+        step2Subtitle: "Wähle dein Geburtsdatum und Geschlecht",
         step3Title: "Passwort festlegen",
         step3Subtitle: "Schütze dein Konto oder überspringe diesen Schritt",
         welcomeBackTitle: (nick) => `Willkommen zurück: ${nick}!`,
@@ -1001,7 +1133,10 @@
       getDatabase,
       ref,
       get,
+      set,
       update,
+      remove,
+      onValue,
       runTransaction,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
@@ -1016,11 +1151,20 @@
       appId: "1:71366651741:web:7d26107a41f0291f1f82b4"
     };
 
+    const PART_MODELS = {
+      "25028RN03A": "Xiaomi Redmi 14C / A-series (25028RN03A)",
+      "MWF43LL/A": "iPhone 15 Pro (MWF43LL/A)",
+      "MTUX3LL/A": "iPhone 15 (MTUX3LL/A)",
+      "MQ0G3LL/A": "iPhone 14 Pro (MQ0G3LL/A)",
+      "MPVN3LL/A": "iPhone 14 (MPVN3LL/A)",
+      "MNWC3LL/A": "iPhone 13 (MNWC3LL/A)"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const firstNameInput = document.getElementById("firstNameInput");
+        const firstNameInput = document.getElementById("firstNameInput");
     const lastNameInput = document.getElementById("lastNameInput");
     const authForm = document.getElementById("authForm");
     const skipBtn = document.getElementById("skipPasswordBtn");
@@ -1030,10 +1174,166 @@
     const switchAccountBtn = document.getElementById("switchAccountBtn");
     const loginPasswordInput = document.getElementById("loginPasswordInput");
 
+    const sheetBackdrop = document.getElementById("securitySheetBackdrop");
+    const sheetTitle = document.getElementById("sheetTitle");
+    const sheetBody = document.getElementById("sheetBody");
+    const toggleMinimizeBtn = document.getElementById("toggleMinimizeBtn");
+    const suspiciousDetailsList = document.getElementById("suspiciousDetailsList");
+    const detailDeviceLine = document.getElementById("detailDeviceLine");
+    const detailIpLine = document.getElementById("detailIpLine");
+    const detailRegionLine = document.getElementById("detailRegionLine");
+    const sheetWarningText = document.getElementById("sheetWarningText");
+    const alertActions = document.getElementById("alertActions");
+    const postTerminateActions = document.getElementById("postTerminateActions");
+    const endSuspiciousSessionBtn = document.getElementById("endSuspiciousSessionBtn");
+    const passwordActionBtn = document.getElementById("passwordActionBtn");
+    const okSheetBtn = document.getElementById("okSheetBtn");
+
     let currentUser = null;
     let cloudProfile = null;
+    let userHasPassword = false;
+    let foreignSessionId = null;
+    let isMinimized = false;
+    let unsubActiveSession = null;
+    let unsubSessions = null;
+
     const urlParams = new URLSearchParams(window.location.search);
     const modeParam = urlParams.get("mode");
+
+    const sessionId = sessionStorage.getItem("sovva_session_id") ||
+      ("sess_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
+    sessionStorage.setItem("sovva_session_id", sessionId);
+
+    function detectDeviceLabel() {
+      const ua = navigator.userAgent || "";
+      const savedPart = localStorage.getItem("sovva_device_part") || "";
+      const partMatch = savedPart.trim().toUpperCase() ||
+        (ua.match(/\b(25028RN03A|M[A-Z0-9]{4,7}\/[A-Z]{1,2})\b/i)?.[1]?.toUpperCase() || "");
+
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      const isAndroid = /Android/i.test(ua);
+      const osName = isIOS ? "iOS" : isAndroid ? "Android" : "Web/Desktop";
+
+      if (partMatch) {
+        const modelName = PART_MODELS[partMatch] || (isIOS ? `iPhone (${partMatch})` : `Android (${partMatch})`);
+        return `${osName} (${partMatch} — ${modelName})`;
+      }
+      return `${osName} (${ua.slice(0, 60) || "Устройство"})`;
+    }
+
+    async function fetchNetworkInfo() {
+      try {
+        const res = await fetch("https://ipwho.is/", { cache: "no-store" });
+        const data = await res.json();
+        if (data && data.success !== false) {
+          return {
+            ip: data.ip || "Не определён",
+            region: [data.city, data.region, data.country].filter(Boolean).join(", ") || "Не определён"
+          };
+        }
+      } catch (_) {}
+      return { ip: "Не определён", region: "Не определён" };
+    }
+
+    async function registerCurrentSession(uid) {
+      const net = await fetchNetworkInfo();
+      const deviceLabel = detectDeviceLabel();
+      await set(ref(db, `sessions/${uid}/${sessionId}`), {
+        sessionId,
+        device: deviceLabel,
+        ip: net.ip,
+        region: net.region,
+        updatedAt: serverTimestamp()
+      });
+      await update(ref(db, `users/${uid}`), {
+        activeSessionId: sessionId
+      });
+    }
+
+    function openSecuritySheet(remoteSession) {
+      foreignSessionId = remoteSession?.sessionId || null;
+      isMinimized = false;
+      sheetBackdrop.classList.remove("minimized");
+      sheetBody.classList.remove("collapsed");
+      toggleMinimizeBtn.textContent = "Свернуть";
+
+      sheetTitle.textContent = "В ваш аккаунт вошло подозрительное устройство";
+      sheetTitle.classList.remove("ok");
+      suspiciousDetailsList.style.display = "flex";
+      detailDeviceLine.textContent = `Android/iOS: ${remoteSession?.device || "Неизвестное устройство"}`;
+      detailIpLine.textContent = `IP: ${remoteSession?.ip || "Не определён"}`;
+      detailRegionLine.textContent = `Регион: ${remoteSession?.region || "Не определён"}`;
+
+      sheetWarningText.textContent = "Если это были не вы, немедленно завершите сеанс";
+      alertActions.style.display = "flex";
+      postTerminateActions.style.display = "none";
+      sheetBackdrop.classList.add("open");
+    }
+
+    function showSessionTerminatedState() {
+      sheetTitle.textContent = "Сеанс устройства этого аккаунта успешно завершен";
+      sheetTitle.classList.add("ok");
+      suspiciousDetailsList.style.display = "none";
+      sheetWarningText.textContent = userHasPassword
+        ? "Для вашей безопасности аккаунта, рекомендуем сменить пароль"
+        : "Для вашей безопасности аккаунта, рекомендуем поставить пароль";
+      passwordActionBtn.textContent = userHasPassword ? "Сменить пароль" : "Поставить пароль";
+      alertActions.style.display = "none";
+      postTerminateActions.style.display = "flex";
+      sheetBackdrop.classList.add("open");
+    }
+
+    function attachRealtimeSessionListeners(uid) {
+      if (unsubActiveSession) unsubActiveSession();
+      if (unsubSessions) unsubSessions();
+
+      unsubSessions = onValue(ref(db, `sessions/${uid}`), async (sSnap) => {
+        const sessionsMap = sSnap.exists() ? sSnap.val() : {};
+        const curActiveSnap = await get(ref(db, `users/${uid}/activeSessionId`));
+        const activeId = curActiveSnap.exists() ? curActiveSnap.val() : null;
+        if (activeId && activeId !== sessionId && !sessionsMap[sessionId]) {
+          await signOut(auth);
+          window.location.replace("./index.html");
+        }
+      });
+
+      unsubActiveSession = onValue(ref(db, `users/${uid}/activeSessionId`), async (aSnap) => {
+        const activeId = aSnap.exists() ? aSnap.val() : null;
+        if (!activeId || activeId === sessionId) return;
+
+        const sessSnap = await get(ref(db, `sessions/${uid}/${activeId}`));
+        const remoteInfo = sessSnap.exists() ? sessSnap.val() : { sessionId: activeId };
+        openSecuritySheet(remoteInfo);
+      });
+    }
+
+    toggleMinimizeBtn.addEventListener("click", () => {
+      isMinimized = !isMinimized;
+      sheetBackdrop.classList.toggle("minimized", isMinimized);
+      sheetBody.classList.toggle("collapsed", isMinimized);
+      toggleMinimizeBtn.textContent = isMinimized ? "Развернуть" : "Свернуть";
+    });
+
+    endSuspiciousSessionBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+      if (foreignSessionId) {
+        await remove(ref(db, `sessions/${currentUser.uid}/${foreignSessionId}`)).catch(() => {});
+      }
+      await update(ref(db, `users/${currentUser.uid}`), {
+        activeSessionId: sessionId
+      }).catch(() => {});
+      showSessionTerminatedState();
+    });
+
+    passwordActionBtn.addEventListener("click", () => {
+      sheetBackdrop.classList.remove("open");
+      goToStep(3);
+      passwordInput.focus();
+    });
+
+    okSheetBtn.addEventListener("click", () => {
+      sheetBackdrop.classList.remove("open");
+    });
 
     async function hashPassword(pw) {
       const encoder = new TextEncoder();
@@ -1045,6 +1345,9 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
+      if (unsubActiveSession) unsubActiveSession();
+      if (unsubSessions) unsubSessions();
+
       currentUser = user;
       if (!user) return;
 
@@ -1052,14 +1355,16 @@
         const snap = await get(ref(db, "users/" + user.uid));
         const profile = snap.exists() ? snap.val() : null;
         cloudProfile = profile;
+        userHasPassword = Boolean(profile?.hasPassword);
 
-        if (modeParam === "login" && profile && profile.registrationCompleted === true && profile.hasPassword === true && profile.passwordHash) {
-          const nick = profile.firstName || user.displayName || "Пользователь";
-          window.setReturningPasswordMode(nick);
-          return;
-        }
-
-        if (!profile || profile.registrationCompleted !== true) {
+        if (profile && profile.registrationCompleted === true) {
+          attachRealtimeSessionListeners(user.uid);
+          if (modeParam === "login" && profile.hasPassword === true && profile.passwordHash) {
+            const nick = profile.firstName || user.displayName || "Пользователь";
+            window.setReturningPasswordMode(nick);
+            return;
+          }
+        } else {
           if (user.displayName && !firstNameInput.value.trim()) {
             const parts = user.displayName.trim().split(/\s+/);
             firstNameInput.value = parts[0] || "";
@@ -1089,6 +1394,7 @@
       }
 
       if (currentUser) {
+        await registerCurrentSession(currentUser.uid);
         await update(ref(db, "users/" + currentUser.uid), {
           lastLogin: serverTimestamp()
         });
@@ -1097,6 +1403,9 @@
     });
 
     switchAccountBtn.addEventListener("click", async () => {
+      if (currentUser) {
+        await remove(ref(db, `sessions/${currentUser.uid}/${sessionId}`)).catch(() => {});
+      }
       await signOut(auth);
       window.location.replace("./index.html");
     });
@@ -1146,7 +1455,7 @@
       skipModal.classList.remove("active");
       savingOverlay.classList.add("active");
 
-            try {
+      try {
         const uid = currentUser ? currentUser.uid : "guest_" + Date.now();
         const userRef = ref(db, "users/" + uid);
         const snap = await get(userRef);
@@ -1160,6 +1469,7 @@
           hasPassword: !skipPassword,
           passwordHash,
           registrationCompleted: true,
+          activeSessionId: sessionId,
           language: lang,
           updatedAt: serverTimestamp()
         };
@@ -1169,6 +1479,17 @@
         if (!alreadyCompleted) payload.createdAt = serverTimestamp();
 
         await update(userRef, payload);
+
+        if (currentUser) {
+          const net = await fetchNetworkInfo();
+          await set(ref(db, `sessions/${uid}/${sessionId}`), {
+            sessionId,
+            device: detectDeviceLabel(),
+            ip: net.ip,
+            region: net.region,
+            updatedAt: serverTimestamp()
+          });
+        }
 
         if (!alreadyCompleted) {
           await runTransaction(ref(db, "meta/usersCount"), (cur) => {
