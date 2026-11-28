@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
-  <title>Sovva — Подтверждение</title>
+  <title>Sovva — Verification</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -287,7 +287,7 @@
 </head>
 <body>
   <main class="card">
-    <!-- Экран 1: Телефон или переход к капче -->
+    <!-- Screen 1: Phone or captcha -->
     <section id="stepPhoneScreen" class="screen active">
       <div id="phoneHero" class="hero-box">
         <svg viewBox="0 0 140 100" width="110" height="80" aria-hidden="true">
@@ -302,22 +302,22 @@
         </svg>
       </div>
 
-      <h1>Подтвердите что вы человек</h1>
+      <h1>Confirm you are human</h1>
       <p>
-        Для обеспечения безопасности мы должны убедиться, что зарегистрироваться хочет только именно человек, поэтому мы должны подтвердить ваш номер телефона, это займёт меньше минуты.
+        To keep Sovva safe, we need to verify that a real human is registering, so please enter your phone number. This takes less than a minute.
       </p>
 
       <div>
-        <label for="phoneInput">Номер телефона (проверяется формат, без СМС и кодов)</label>
+        <label for="phoneInput">Phone number (format check only, no SMS or codes)</label>
         <input id="phoneInput" type="tel" placeholder="+7 999 123-45-67" autocomplete="tel" />
       </div>
 
       <div id="phoneErr" class="err"></div>
-      <button id="verifyPhoneBtn" type="button" class="btn-primary">Подтвердить</button>
-      <button id="openCaptchaBtn" type="button" class="btn-secondary">Пройти капчу</button>
+      <button id="verifyPhoneBtn" type="button" class="btn-primary">Verify</button>
+      <button id="openCaptchaBtn" type="button" class="btn-secondary">Take captcha</button>
     </section>
 
-    <!-- Экран 2: Капча с дорисовыванием второй части -->
+    <!-- Screen 2: Draw-the-other-half captcha -->
     <section id="captchaScreen" class="screen">
       <div id="captchaHero" class="hero-box">
         <svg viewBox="0 0 120 120" width="88" height="88" aria-hidden="true">
@@ -328,33 +328,33 @@
         </svg>
       </div>
 
-      <h1>Подтвердите что вы человек</h1>
+      <h1>Confirm you are human</h1>
       <p>
-        Пожалуйста, нам очень нужно подтвердить что вы именно человек. Эта защита помогает обеспечить наш сайт от вредоносных программ и роботов.
+        Please confirm that you are a real person. This helps protect our site from automated bots and abuse.
       </p>
 
-      <p id="captchaLoadingText" class="ok">Загрузка проверки...</p>
+      <p id="captchaLoadingText" class="ok">Loading check...</p>
 
       <div id="captchaCheckBox" class="checkbox-box" role="button" tabindex="0">
         <div id="captchaSq" class="sq"></div>
-        <span>Подтвердите что вы человек</span>
+        <span>Confirm you are human</span>
       </div>
 
       <div id="drawWrap" class="draw-wrap">
-        <p>Левая часть оставлена, правая убрана. Дорисуйте правую половину и нажмите «Проверить» (нужно совпадение от 75%).</p>
+        <p>The left half is shown and the right half is hidden. Draw the right half and click "Check" (at least 75% match required).</p>
         <canvas id="drawCanvas" width="320" height="170"></canvas>
         <div id="captchaErr" class="err"></div>
-        <button id="clearDrawBtn" type="button" class="btn-secondary">Очистить рисунок</button>
-        <button id="checkDrawBtn" type="button" class="btn-primary">Проверить</button>
+        <button id="clearDrawBtn" type="button" class="btn-secondary">Clear drawing</button>
+        <button id="checkDrawBtn" type="button" class="btn-primary">Check</button>
       </div>
 
-      <button id="backFromCaptchaBtn" type="button" class="btn-secondary">Назад</button>
+      <button id="backFromCaptchaBtn" type="button" class="btn-secondary">Back</button>
     </section>
 
-    <!-- Экран 3: Подтверждение данных перед входом в Sovva -->
+    <!-- Screen 3: Confirm data before entering Sovva -->
     <section id="confirmDataScreen" class="screen">
-      <h1>Подтвердите что ваши данные и формат были правильны</h1>
-      <p>Проверьте свои данные перед переходом в Sovva.</p>
+      <h1>Confirm your details and format</h1>
+      <p>Review your details before continuing to Sovva.</p>
 
       <div class="profile-preview">
         <div id="avatarBox" class="avatar">S</div>
@@ -365,7 +365,7 @@
       </div>
 
       <div id="saveErr" class="err"></div>
-      <button id="continueToSovvaBtn" type="button" class="btn-primary">Продолжить</button>
+      <button id="continueToSovvaBtn" type="button" class="btn-primary">Continue</button>
     </section>
   </main>
 
@@ -405,14 +405,14 @@
     let draft = {};
     try { draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "{}"); } catch {}
 
-    if (!draft.firstName || !draft.birthDate || !draft.passwordHash) {
+    if (!draft.firstName) {
       window.location.replace("./name.html");
     }
 
     const phoneHero = document.getElementById("phoneHero");
     const captchaHero = document.getElementById("captchaHero");
-    if (PHONE_IMAGE_URL) phoneHero.innerHTML = `<img src="${PHONE_IMAGE_URL}" alt="Проверка" />`;
-    if (CAPTCHA_IMAGE_URL) captchaHero.innerHTML = `<img src="${CAPTCHA_IMAGE_URL}" alt="Капча" />`;
+    if (PHONE_IMAGE_URL) phoneHero.innerHTML = `<img src="${PHONE_IMAGE_URL}" alt="Verification" />`;
+    if (CAPTCHA_IMAGE_URL) captchaHero.innerHTML = `<img src="${CAPTCHA_IMAGE_URL}" alt="Captcha" />`;
 
     const stepPhoneScreen = document.getElementById("stepPhoneScreen");
     const captchaScreen = document.getElementById("captchaScreen");
@@ -446,12 +446,12 @@
     }
 
     function showConfirmDataScreen() {
-      const fullName = [draft.firstName || "", draft.lastName || ""].filter(Boolean).join(" ") || "Пользователь";
+      const fullName = [draft.firstName || "", draft.lastName || ""].filter(Boolean).join(" ") || "User";
       previewName.textContent = fullName;
       previewEmail.textContent = currentUser?.email || "—";
 
       if (currentUser?.photoURL) {
-        avatarBox.innerHTML = `<img src="${currentUser.photoURL}" alt="Аватар" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" />`;
+        avatarBox.innerHTML = `<img src="${currentUser.photoURL}" alt="Avatar" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" />`;
       } else {
         avatarBox.textContent = fullName.charAt(0).toUpperCase() || "S";
       }
@@ -471,7 +471,7 @@
       const raw = phoneInput.value.trim();
       const digits = raw.replace(/\D/g, "");
       if (digits.length < 7 || digits.length > 15) {
-        phoneErr.textContent = "Введите корректный номер телефона (от 7 до 15 цифр).";
+        phoneErr.textContent = "Enter a valid phone number (7 to 15 digits).";
         return;
       }
       phoneErr.textContent = "";
@@ -572,9 +572,9 @@
       drawWrap.classList.remove("active");
       captchaSq.textContent = "";
       captchaErr.textContent = "";
-      captchaLoadingText.textContent = "Загрузка проверки...";
+      captchaLoadingText.textContent = "Loading check...";
       setTimeout(() => {
-        captchaLoadingText.textContent = "Проверка загружена:";
+        captchaLoadingText.textContent = "Check ready:";
         captchaCheckBox.classList.add("active");
       }, 900);
     });
@@ -645,14 +645,14 @@
       const penalty = targetCount ? Math.min(35, (extraCount / targetCount) * 30) : 0;
       const score = Math.max(0, rawMatch - penalty);
 
-            if (score >= 75) {
+      if (score >= 75) {
         captchaErr.textContent = "";
         draft.verifiedBy = "captcha";
         draft.captchaScore = Math.round(score);
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
         showConfirmDataScreen();
       } else {
-        captchaErr.textContent = `Совпадение ${Math.round(score)}%. Нужно минимум 75% — дорисуйте правую часть точнее.`;
+        captchaErr.textContent = `Match ${Math.round(score)}%. At least 75% is required — draw the right half more accurately.`;
       }
     });
 
@@ -660,7 +660,7 @@
       showScreen(stepPhoneScreen);
     });
 
-    continueToSovvaBtn.addEventListener("click", async () => {
+        continueToSovvaBtn.addEventListener("click", async () => {
       if (!currentUser) {
         window.location.replace("./index.html");
         return;
@@ -680,9 +680,9 @@
           firstName: draft.firstName,
           lastName: draft.lastName || "",
           displayName,
-          birthDate: draft.birthDate,
+          birthDate: draft.birthDate || "",
           gender: draft.gender || "none",
-          passwordHash: draft.passwordHash,
+          passwordHash: draft.passwordHash || "",
           phone: draft.phone || "",
           humanVerifiedBy: draft.verifiedBy || "manual",
           registrationCompleted: true,
@@ -699,7 +699,7 @@
         sessionStorage.removeItem(DRAFT_KEY);
         window.location.replace("./sovva.html");
       } catch (e) {
-        saveErr.textContent = e?.message || "Ошибка при сохранении профиля.";
+        saveErr.textContent = e?.message || "Failed to save profile.";
       }
     });
   </script>
