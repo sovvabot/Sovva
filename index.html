@@ -62,41 +62,6 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .logout-btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .user-box {
-      display: none;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-    .user-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .user-email {
-      font-size: 13px;
-      color: var(--muted);
-    }
     .status-text {
       font-size: 13px;
       color: var(--muted);
@@ -148,17 +113,6 @@
       <span>Войти через Google</span>
     </button>
 
-    <div id="userBox" class="user-box">
-      <div class="user-row">
-        <img id="userPhoto" class="avatar" src="" alt="" />
-        <div>
-          <div id="userName"></div>
-          <div id="userEmail" class="user-email"></div>
-        </div>
-      </div>
-      <button id="logoutBtn" class="logout-btn" type="button">Выйти</button>
-    </div>
-
     <p id="statusText" class="status-text"></p>
   </main>
 
@@ -191,19 +145,12 @@
       getAuth,
       GoogleAuthProvider,
       signInWithPopup,
-      signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
       getDatabase,
       ref,
-      update,
-      get,
-      set,
-      remove,
-      onDisconnect,
-      runTransaction,
-      serverTimestamp
+      get
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -223,13 +170,7 @@
     provider.setCustomParameters({ prompt: "select_account" });
 
     const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const userBox = document.getElementById("userBox");
-    const userPhoto = document.getElementById("userPhoto");
-    const userName = document.getElementById("userName");
-    const userEmail = document.getElementById("userEmail");
     const statusText = document.getElementById("statusText");
-
     let isRedirecting = false;
 
     function getWaitTimeText() {
@@ -240,46 +181,9 @@
       return m > 0 ? `${h} ч ${m} мин` : `${h} ч`;
     }
 
-    async function adjustCounter(path, delta) {
-      const counterRef = ref(db, path);
-      await runTransaction(counterRef, (current) => {
-        const val = typeof current === "number" ? current : 0;
-        const next = val + delta;
-        return next < 0 ? 0 : next;
-      });
-    }
-
-    async function enterOnline(user) {
-      const myOnlineRef = ref(db, "online/" + user.uid);
-      const existing = await get(myOnlineRef);
-      const wasOnline = existing.exists();
-
-      await set(myOnlineRef, {
-        name: user.displayName || "Пользователь",
-        joinedAt: serverTimestamp()
-      });
-
-      if (!wasOnline) {
-        await adjustCounter("meta/onlineCount", 1);
-      }
-
-      onDisconnect(myOnlineRef).remove();
-    }
-
-    async function leaveOnline(uid) {
-      const myOnlineRef = ref(db, "online/" + uid);
-      const existing = await get(myOnlineRef);
-      if (existing.exists()) {
-        await remove(myOnlineRef);
-        await adjustCounter("meta/onlineCount", -1);
-      }
-    }
-
-    async function checkRegistrationAndRoute(user) {
+    async function routeUser(user) {
       if (isRedirecting) return;
-
-      const userRef = ref(db, "users/" + user.uid);
-      const snap = await get(userRef);
+      const snap = await get(ref(db, "users/" + user.uid));
       const profile = snap.exists() ? snap.val() : null;
 
       const isRegistered = Boolean(
@@ -291,68 +195,38 @@
         profile.birthDate.trim().length > 0
       );
 
+      isRedirecting = true;
       if (!isRegistered) {
-        isRedirecting = true;
         window.location.replace("./auth.html");
-        return;
+      } else if (profile.hasPassword === true && profile.passwordHash) {
+        window.location.replace("./auth.html?mode=login");
+      } else {
+        window.location.replace("./sovva.html");
       }
-
-      loginBtn.style.display = "none";
-      userBox.style.display = "flex";
-      const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
-      userName.textContent = fullName || user.displayName || "Пользователь";
-      userEmail.textContent = user.email || "";
-      userPhoto.src = user.photoURL || "";
-      userPhoto.style.display = user.photoURL ? "block" : "none";
-
-      await update(userRef, {
-        email: user.email || profile.email || "",
-        photo: user.photoURL || profile.photo || "",
-        lastLogin: serverTimestamp()
-      });
-
-      await enterOnline(user);
-      statusText.textContent = "";
     }
 
     loginBtn.addEventListener("click", async () => {
       statusText.textContent = "Открываем окно Google...";
       try {
         const result = await signInWithPopup(auth, provider);
-        await checkRegistrationAndRoute(result.user);
+        await routeUser(result.user);
       } catch (err) {
         statusText.textContent = "Ошибка входа: " + err.code;
       }
     });
 
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        if (auth.currentUser) {
-          await leaveOnline(auth.currentUser.uid);
-        }
-        await signOut(auth);
-        statusText.textContent = "Вы вышли из аккаунта";
-      } catch (err) {
-        statusText.textContent = "Ошибка выхода: " + err.code;
-      }
-    });
-
     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          await checkRegistrationAndRoute(user);
-        } catch (err) {
-          if (err.code === "PERMISSION_DENIED") {
-            statusText.textContent =
-              `Упс!!! Кажется, онлайн базы в реальном времени сейчас недоступен.\n` +
-              `Подождите, когда база в реальном времени обновится через ${getWaitTimeText()} — сервер сбросится с нуля, и можно будет заходить снова.`;
-          } else {
-            statusText.textContent = "Ошибка базы: " + err.code;
-          }
+      if (!user) return;
+      try {
+        await routeUser(user);
+      } catch (err) {
+        if (err.code === "PERMISSION_DENIED") {
+          statusText.textContent =
+            `Упс!!! Кажется, онлайн базы в реальном времени сейчас недоступен.\n` +
+            `Подождите, когда база в реальном времени обновится через ${getWaitTimeText()} — сервер сбросится с нуля, и можно будет заходить снова.`;
+        } else {
+          statusText.textContent = "Ошибка базы: " + err.code;
         }
-      } else {
-        loginBtn.style.display = "inline-flex";
-        userBox.style.display = "none";
       }
     });
   </script>
