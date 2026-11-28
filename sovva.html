@@ -315,6 +315,7 @@
     let foreignSessionId = null;
     let unsubActiveSession = null;
     let unsubSessions = null;
+    let sessionReady = false;
 
     const sessionId = sessionStorage.getItem("sovva_session_id") ||
       ("sess_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
@@ -446,12 +447,17 @@
         activeSessionId: sessionId
       });
 
-      const net = await fetchNetworkInfo();
-      await update(ref(db, `sessions/${uid}/${sessionId}`), {
-        ip: net.ip,
-        region: net.region,
-        updatedAt: serverTimestamp()
-      }).catch(() => {});
+      // Сеанс текущего устройства зафиксирован — теперь можно слушать чужие входы
+      sessionReady = true;
+
+      // IP и регион подтягиваем асинхронно, не блокируя интерфейс
+      fetchNetworkInfo().then((net) => {
+        update(ref(db, `sessions/${uid}/${sessionId}`), {
+          ip: net.ip,
+          region: net.region,
+          updatedAt: serverTimestamp()
+        }).catch(() => {});
+      });
     }
 
     function openSecuritySheet(remoteSession) {
@@ -511,6 +517,7 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
+      sessionReady = false;
       if (unsubActiveSession) unsubActiveSession();
       if (unsubSessions) unsubSessions();
 
@@ -546,20 +553,11 @@
       sessionStorage.setItem("sovva_profile_cache", JSON.stringify(uiData));
       renderProfileUI(uiData);
 
-      // Регистрацию сеанса запускаем в фоне, не блокируя интерфейс
-      registerCurrentSession(user.uid).catch(() => {});
-
-      unsubSessions = onValue(ref(db, `sessions/${user.uid}`), async (sSnap) => {
-        const latestSessionsMap = sSnap.exists() ? sSnap.val() : {};
-        const curActiveSnap = await get(ref(db, `users/${user.uid}/activeSessionId`));
-        const activeId = curActiveSnap.exists() ? curActiveSnap.val() : null;
-        if (activeId && activeId !== sessionId && !latestSessionsMap[sessionId]) {
-          await signOut(auth);
-          window.location.replace("./index.html");
-        }
-      });
+      // Сначала регистрируем сеанс текущего устройства, потом вешаем слушатели
+      await registerCurrentSession(user.uid).catch(() => { sessionReady = true; });
 
             unsubActiveSession = onValue(ref(db, `users/${user.uid}/activeSessionId`), async (aSnap) => {
+        if (!sessionReady) return;
         const activeId = aSnap.exists() ? aSnap.val() : null;
         if (!activeId || activeId === sessionId) return;
 
